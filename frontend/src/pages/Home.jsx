@@ -4,6 +4,7 @@ import { getCourses, getTrendingCourses } from '../api/courseApi.js'
 import { getUserDashboard } from '../api/dashboardApi.js'
 import { getLessons } from '../api/lessonApi.js'
 import { getProgressByUserId } from '../api/progressApi.js'
+import { ROUTES } from '../constants/index.js'
 import { getStoredUser, normalizeList, sameId } from '../utils/flowHelpers.js'
 
 function average(items, field) {
@@ -101,7 +102,7 @@ function Home() {
             Cá nhân hóa tiến trình học, theo dõi kết quả quiz và nhận phản hồi học tập dựa trên dữ liệu thực tế của bạn.
           </p>
           <div className="actions">
-            <Link className="primary-button" to="/courses">
+            <Link className="primary-button" to={ROUTES.COURSES}>
               Khám phá khóa học
             </Link>
             <Link className="secondary-button" to={user ? dashboardPath : '/login'}>
@@ -163,7 +164,7 @@ function Home() {
       <section className="home-section">
         <div className="home-section-heading">
           <h2>Khóa học xu hướng</h2>
-          <Link className="text-link" to="/courses">
+          <Link className="text-link" to={ROUTES.COURSES}>
             Xem tất cả
           </Link>
         </div>

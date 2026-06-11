@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import axiosClient from '../api/axiosClient'
+import { ROLES, ROUTES, STORAGE_KEYS } from '../constants/index.js'
 
 function Login() {
   const navigate = useNavigate()
@@ -27,16 +28,16 @@ function Login() {
 
     try {
       const response = await axiosClient.post('/auth/login', formData)
-      localStorage.setItem('user', JSON.stringify(response.data))
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.data))
       if (response.data?.id) {
-        localStorage.setItem('userId', String(response.data.id))
+        localStorage.setItem(STORAGE_KEYS.USER_ID, String(response.data.id))
       }
 
-      const isAdmin = response.data?.role === 'admin'
+      const isAdmin = response.data?.role === ROLES.ADMIN
       const redirectTo = location.state?.from?.pathname
-      const safeRedirect = redirectTo?.startsWith('/admin') && !isAdmin ? '/' : redirectTo
+      const safeRedirect = redirectTo?.startsWith('/admin') && !isAdmin ? ROUTES.HOME : redirectTo
 
-      navigate(safeRedirect || (isAdmin ? '/admin/dashboard' : '/courses'), { replace: true })
+      navigate(safeRedirect || (isAdmin ? ROUTES.ADMIN_DASHBOARD : ROUTES.COURSES), { replace: true })
     } catch (err) {
       setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại.')
     } finally {
@@ -83,7 +84,7 @@ function Login() {
         </button>
 
         <p className="form-footer">
-          Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
+          Chưa có tài khoản? <Link to={ROUTES.REGISTER}>Đăng ký ngay</Link>
         </p>
       </form>
     </section>

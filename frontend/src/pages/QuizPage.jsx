@@ -2,29 +2,17 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { generateFeedback } from '../api/feedbackApi.js'
 import { answerAdaptiveQuestion, startAdaptiveQuiz } from '../api/quizApi.js'
-
-const TOTAL_ADAPTIVE_QUESTIONS = 10
-
-const answerOptions = [
-  { value: 'A', field: 'optionA' },
-  { value: 'B', field: 'optionB' },
-  { value: 'C', field: 'optionC' },
-  { value: 'D', field: 'optionD' },
-]
+import { ANSWER_OPTIONS, DIFFICULTY, QUIZ_CONFIG, ROUTES, STORAGE_KEYS } from '../constants/index.js'
 
 function getDifficultyLabel(level) {
-  if (level === 'medium') {
-    return 'Trung bình'
-  }
-  if (level === 'hard') {
-    return 'Khó'
-  }
+  if (level === DIFFICULTY.MEDIUM) return 'Trung bình'
+  if (level === DIFFICULTY.HARD) return 'Khó'
   return 'Cơ bản'
 }
 
 function getCurrentUser() {
   try {
-    return JSON.parse(localStorage.getItem('user') || 'null')
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) || 'null')
   } catch {
     return null
   }
@@ -50,7 +38,7 @@ function QuizPage() {
   const [currentDifficulty, setCurrentDifficulty] = useState('basic')
   const [selectedAnswer, setSelectedAnswer] = useState('')
   const [answeredCount, setAnsweredCount] = useState(0)
-  const [totalQuestions, setTotalQuestions] = useState(TOTAL_ADAPTIVE_QUESTIONS)
+  const [totalQuestions, setTotalQuestions] = useState(QUIZ_CONFIG.TOTAL_ADAPTIVE_QUESTIONS)
   const [questionStartedAt, setQuestionStartedAt] = useState(null)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [result, setResult] = useState(null)
@@ -76,7 +64,7 @@ function QuizPage() {
         const data = await startAdaptiveQuiz({
           userId: user.id,
           lessonId: Number(lessonId),
-          totalQuestions: TOTAL_ADAPTIVE_QUESTIONS,
+          totalQuestions: QUIZ_CONFIG.TOTAL_ADAPTIVE_QUESTIONS,
         })
 
         if (!isMounted) {
@@ -91,7 +79,7 @@ function QuizPage() {
         setCurrentQuestion(data.question)
         setCurrentDifficulty(data.currentDifficulty || 'basic')
         setAnsweredCount(data.answeredCount || 0)
-        setTotalQuestions(data.totalQuestions || TOTAL_ADAPTIVE_QUESTIONS)
+        setTotalQuestions(data.totalQuestions || QUIZ_CONFIG.TOTAL_ADAPTIVE_QUESTIONS)
         setQuestionStartedAt(Date.now())
         setElapsedSeconds(0)
         setError('')
@@ -232,7 +220,7 @@ function QuizPage() {
 
   return (
     <section className="page-shell wide-shell">
-      <Link className="text-link" to={`/lessons/${lessonId}`}>
+      <Link className="text-link" to={ROUTES.lessonDetail(lessonId)}>
         Quay lại bài học
       </Link>
 
@@ -272,7 +260,7 @@ function QuizPage() {
               <h2>{currentQuestion.questionContent}</h2>
 
               <div className="answer-list">
-                {answerOptions.map((option) => (
+                {ANSWER_OPTIONS.map((option) => (
                   <label
                     className={`answer-option ${selectedAnswer === option.value ? 'selected' : ''}`}
                     key={option.value}
@@ -344,12 +332,12 @@ function QuizPage() {
                 <Link
                   className="secondary-button"
                   state={{ feedback: generatedFeedback }}
-                  to={`/feedback/${attemptId}`}
+                  to={ROUTES.feedbackPage(attemptId)}
                 >
                   Xem phản hồi
                 </Link>
               )}
-              <Link className="primary-button" to={`/lessons/${lessonId}`}>
+              <Link className="primary-button" to={ROUTES.lessonDetail(lessonId)}>
                 Quay lại bài học
               </Link>
             </div>

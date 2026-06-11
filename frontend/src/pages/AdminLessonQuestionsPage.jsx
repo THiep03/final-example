@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getLessonById } from '../api/lessonApi.js'
 import { createQuestion, deleteQuestion, getQuestionsByLessonId, updateQuestion } from '../api/questionApi.js'
+import { DIFFICULTY, ROUTES } from '../constants/index.js'
 
 const initialQuestionForm = {
   questionContent: '',
@@ -10,16 +11,12 @@ const initialQuestionForm = {
   optionC: '',
   optionD: '',
   correctAnswer: 'A',
-  difficultyLevel: 'basic',
+  difficultyLevel: DIFFICULTY.BASIC,
 }
 
 function getDifficultyLabel(level) {
-  if (level === 'medium') {
-    return 'Trung bình'
-  }
-  if (level === 'hard') {
-    return 'Khó'
-  }
+  if (level === DIFFICULTY.MEDIUM) return 'Trung bình'
+  if (level === DIFFICULTY.HARD) return 'Khó'
   return 'Cơ bản'
 }
 
@@ -165,7 +162,7 @@ function AdminLessonQuestionsPage() {
 
   return (
     <section className="page-shell wide-shell admin-page">
-      <Link className="text-link" to={lesson?.courseId ? `/admin/courses/${lesson.courseId}/content` : '/admin/lessons'}>
+      <Link className="text-link" to={lesson?.courseId ? ROUTES.adminCourseContent(lesson.courseId) : ROUTES.ADMIN_LESSONS}>
         Quay lại nội dung khóa học
       </Link>
 

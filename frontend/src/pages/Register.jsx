@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axiosClient from '../api/axiosClient'
+import { ROUTES, STORAGE_KEYS } from '../constants/index.js'
 
 function Register() {
   const navigate = useNavigate()
@@ -27,11 +28,11 @@ function Register() {
 
     try {
       const response = await axiosClient.post('/auth/register', formData)
-      localStorage.setItem('user', JSON.stringify(response.data))
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.data))
       if (response.data?.id) {
-        localStorage.setItem('userId', String(response.data.id))
+        localStorage.setItem(STORAGE_KEYS.USER_ID, String(response.data.id))
       }
-      navigate('/', { replace: true })
+      navigate(ROUTES.HOME, { replace: true })
     } catch (err) {
       setError(err.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.')
     } finally {
@@ -90,7 +91,7 @@ function Register() {
         </button>
 
         <p className="form-footer">
-          Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
+          Đã có tài khoản? <Link to={ROUTES.LOGIN}>Đăng nhập</Link>
         </p>
       </form>
     </section>

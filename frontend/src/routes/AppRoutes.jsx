@@ -1,7 +1,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import AdminDashboardPage from '../pages/AdminDashboardPage.jsx'
+import { ROUTES } from '../constants/index.js'
 import AdminCourseContentPage from '../pages/AdminCourseContentPage.jsx'
 import AdminCoursesPage from '../pages/AdminCoursesPage.jsx'
+import AdminDashboardPage from '../pages/AdminDashboardPage.jsx'
 import AdminFilesPage from '../pages/AdminFilesPage.jsx'
 import AdminLessonQuestionsPage from '../pages/AdminLessonQuestionsPage.jsx'
 import AdminLessonsPage from '../pages/AdminLessonsPage.jsx'
@@ -26,30 +27,30 @@ function AppRoutes() {
       <Routes>
         <Route element={<AppLayout />}>
           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<StudentDashboardPage />} />
+            <Route path={ROUTES.HOME} element={<Home />} />
+            <Route path={ROUTES.DASHBOARD} element={<StudentDashboardPage />} />
             <Route path="/dashboard/courses/:courseId/progress" element={<CourseProgressDetailPage />} />
-            <Route path="/courses" element={<CoursesPage />} />
+            <Route path={ROUTES.COURSES} element={<CoursesPage />} />
             <Route path="/courses/:id" element={<CourseDetailPage />} />
             <Route path="/lessons/:id" element={<LessonDetailPage />} />
             <Route path="/quiz/:lessonId" element={<QuizPage />} />
             <Route path="/feedback/:attemptId" element={<FeedbackPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
           </Route>
 
           <Route element={<ProtectedRoute requireAdmin />}>
-            <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-            <Route path="/admin/courses" element={<AdminCoursesPage />} />
+            <Route path={ROUTES.ADMIN_DASHBOARD} element={<AdminDashboardPage />} />
+            <Route path={ROUTES.ADMIN_COURSES} element={<AdminCoursesPage />} />
             <Route path="/admin/courses/:courseId/content" element={<AdminCourseContentPage />} />
-            <Route path="/admin/lessons" element={<AdminLessonsPage />} />
+            <Route path={ROUTES.ADMIN_LESSONS} element={<AdminLessonsPage />} />
             <Route path="/admin/lessons/:lessonId/questions" element={<AdminLessonQuestionsPage />} />
-            <Route path="/admin/questions" element={<AdminQuestionsPage />} />
-            <Route path="/admin/files" element={<AdminFilesPage />} />
+            <Route path={ROUTES.ADMIN_QUESTIONS} element={<AdminQuestionsPage />} />
+            <Route path={ROUTES.ADMIN_FILES} element={<AdminFilesPage />} />
           </Route>
 
           <Route element={<PublicOnlyRoute />}>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path={ROUTES.LOGIN} element={<Login />} />
+            <Route path={ROUTES.REGISTER} element={<Register />} />
           </Route>
         </Route>
       </Routes>

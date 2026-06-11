@@ -10,20 +10,14 @@ import {
   getLessonReaction,
 } from '../api/lessonInteractionApi.js'
 import { completeProgress, startProgress } from '../api/progressApi.js'
+import { AI_CONFIG, FOCUS_SCORE, FOCUS_STATUS, ROUTES, STORAGE_KEYS, getLessonNoteKey } from '../constants/index.js'
 
 const emptyStats = { totalViews: 0, totalLikes: 0, totalDislikes: 0 }
 const recentViewEvents = new Map()
 
-const MODELS_URL = '/models'
-const DETECTION_INTERVAL_MS = 2000
-const LOG_INTERVAL_MS = 15000
-const DISTRACT_ALERT_THRESHOLD = 3
-const EAR_THRESHOLD = 0.22
-const DROWSY_ALERT_THRESHOLD = 4
-
 const getCurrentUser = () => {
   try {
-    return JSON.parse(localStorage.getItem('user') || 'null')
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) || 'null')
   } catch {
     return null
   }
@@ -38,8 +32,6 @@ const shouldSendView = (userId, lessonId) => {
   return true
 }
 
-const getNoteKey = (userId, lessonId) => `lesson_note_${userId}_${lessonId}`
-
 function formatValue(value, suffix = '') {
   if (value === null || value === undefined || value === '') return 'Chưa cập nhật'
   return suffix ? `${value} ${suffix}` : value
@@ -49,8 +41,8 @@ let modelsLoaded = false
 async function loadModelsOnce() {
   if (modelsLoaded) return
   await Promise.all([
-    faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_URL),
-    faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODELS_URL),
+    faceapi.nets.tinyFaceDetector.loadFromUri(AI_CONFIG.MODELS_URL),
+    faceapi.nets.faceLandmark68TinyNet.loadFromUri(AI_CONFIG.MODELS_URL),
   ])
   modelsLoaded = true
 }
@@ -194,7 +186,7 @@ function LessonDetailPage() {
         const user = getCurrentUser()
 
         if (user?.id) {
-          const savedNote = localStorage.getItem(getNoteKey(user.id, id))
+          const savedNote = localStorage.getItem(getLessonNoteKey(user.id, id))
           if (savedNote !== null && isMounted) setNoteText(savedNote)
         }
 
@@ -288,19 +280,19 @@ function LessonDetailPage() {
         if (!detection) {
           distractedCountRef.current += 1
           drowsyCountRef.current = 0
-          setFocusStatus('no_face')
-          if (distractedCountRef.current >= DISTRACT_ALERT_THRESHOLD) {
+          setFocusStatus(FOCUS_STATUS.NO_FACE)
+          if (distractedCountRef.current >= AI_CONFIG.DISTRACT_ALERT_THRESHOLD) {
             setFocusAlert('⚠️ Không phát hiện khuôn mặt! Bạn có đang học không?')
           }
           return
         }
 
         const ear = calculateEAR(detection.landmarks)
-        if (ear < EAR_THRESHOLD) {
+        if (ear < AI_CONFIG.EAR_THRESHOLD) {
           drowsyCountRef.current += 1
           distractedCountRef.current += 1
-          if (drowsyCountRef.current >= DROWSY_ALERT_THRESHOLD) {
-            setFocusStatus('drowsy')
+          if (drowsyCountRef.current >= AI_CONFIG.DROWSY_ALERT_THRESHOLD) {
+            setFocusStatus(FOCUS_STATUS.DROWSY)
             setFocusAlert('⚠️ Phát hiện buồn ngủ! Hãy tỉnh táo và tập trung vào bài học.')
           }
           return
@@ -311,21 +303,21 @@ function LessonDetailPage() {
         if (focused) {
           focusFramesRef.current += 1
           distractedCountRef.current = 0
-          setFocusStatus('focused')
+          setFocusStatus(FOCUS_STATUS.FOCUSED)
           setFocusAlert('')
         } else {
           distractedCountRef.current += 1
-          setFocusStatus('distracted')
-          if (distractedCountRef.current >= DISTRACT_ALERT_THRESHOLD) {
+          setFocusStatus(FOCUS_STATUS.DISTRACTED)
+          if (distractedCountRef.current >= AI_CONFIG.DISTRACT_ALERT_THRESHOLD) {
             setFocusAlert('⚠️ Bạn đang nhìn đi chỗ khác! Hãy tập trung vào bài học.')
           }
         }
       } catch {
         // detection lỗi bỏ qua frame này
       }
-    }, DETECTION_INTERVAL_MS)
+    }, AI_CONFIG.DETECTION_INTERVAL_MS)
 
-    logTimerRef.current = setInterval(() => sendFocusLog(lessonId), LOG_INTERVAL_MS)
+    logTimerRef.current = setInterval(() => sendFocusLog(lessonId), AI_CONFIG.LOG_INTERVAL_MS)
   }, [stopDetection, sendFocusLog])
 
   const startCamera = useCallback(async () => {
@@ -357,7 +349,7 @@ function LessonDetailPage() {
     const value = event.target.value
     setNoteText(value)
     const user = getCurrentUser()
-    if (user?.id) localStorage.setItem(getNoteKey(user.id, id), value)
+    if (user?.id) localStorage.setItem(getLessonNoteKey(user.id, id), value)
   }
 
   const nextLesson = useMemo(() => {
@@ -436,18 +428,18 @@ function LessonDetailPage() {
   const stats = interactionStats || emptyStats
 
   const focusStatusLabel = {
-    idle: 'Chờ phát hiện',
-    focused: 'Đang tập trung',
-    distracted: 'Mất tập trung',
-    no_face: 'Không phát hiện khuôn mặt',
-    drowsy: 'Phát hiện buồn ngủ',
+    [FOCUS_STATUS.IDLE]: 'Chờ phát hiện',
+    [FOCUS_STATUS.FOCUSED]: 'Đang tập trung',
+    [FOCUS_STATUS.DISTRACTED]: 'Mất tập trung',
+    [FOCUS_STATUS.NO_FACE]: 'Không phát hiện khuôn mặt',
+    [FOCUS_STATUS.DROWSY]: 'Phát hiện buồn ngủ',
   }[focusStatus] || 'Chờ phát hiện'
 
   const focusStatusClass = {
-    focused: 'is-on',
-    distracted: 'is-denied',
-    no_face: 'is-denied',
-    drowsy: 'is-warning',
+    [FOCUS_STATUS.FOCUSED]: 'is-on',
+    [FOCUS_STATUS.DISTRACTED]: 'is-denied',
+    [FOCUS_STATUS.NO_FACE]: 'is-denied',
+    [FOCUS_STATUS.DROWSY]: 'is-warning',
   }[focusStatus] || 'is-off'
 
   return (
@@ -499,7 +491,7 @@ function LessonDetailPage() {
             {cameraEnabled && focusScore !== null && (
               <div className="focus-score-display">
                 <span>Điểm tập trung phiên vừa rồi:</span>
-                <strong className={focusScore >= 70 ? 'score-good' : focusScore >= 40 ? 'score-mid' : 'score-low'}>
+                <strong className={focusScore >= FOCUS_SCORE.GOOD ? 'score-good' : focusScore >= FOCUS_SCORE.MID ? 'score-mid' : 'score-low'}>
                   {focusScore}%
                 </strong>
               </div>
@@ -606,7 +598,7 @@ function LessonDetailPage() {
             )}
             {progressMessage && !progressCompleted && <p className="success-alert compact-alert">{progressMessage}</p>}
             {progressError && <p className="alert compact-alert">{progressError}</p>}
-            <Link className="primary-button quiz-cta-button" to={`/quiz/${lesson.id}`}>Bắt đầu quiz</Link>
+            <Link className="primary-button quiz-cta-button" to={ROUTES.quizPage(lesson.id)}>Bắt đầu quiz</Link>
           </div>
 
           <div className="lesson-interaction-panel">

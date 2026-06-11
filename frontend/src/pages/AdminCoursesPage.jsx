@@ -2,16 +2,17 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { createCourse, deleteCourse, getCourses, updateCourse } from '../api/courseApi.js'
 import { uploadFile } from '../api/fileApi.js'
+import { CONTENT_STATUS, ROUTES } from '../constants/index.js'
 
 const initialForm = {
   title: '',
   description: '',
   thumbnailUrl: '',
-  status: 'draft',
+  status: CONTENT_STATUS.DRAFT,
 }
 
 function getStatusLabel(status) {
-  return status === 'published' ? 'Đã xuất bản' : 'Bản nháp'
+  return status === CONTENT_STATUS.PUBLISHED ? 'Đã xuất bản' : 'Bản nháp'
 }
 
 function AdminCoursesPage() {
@@ -259,7 +260,7 @@ function AdminCoursesPage() {
                         <button className="danger-button small-action" type="button" onClick={() => handleDelete(course.id)}>
                           Xóa
                         </button>
-                        <Link className="ghost-button small-action" to={`/admin/courses/${course.id}/content`}>
+                        <Link className="ghost-button small-action" to={ROUTES.adminCourseContent(course.id)}>
                           Quản lý nội dung
                         </Link>
                       </div>

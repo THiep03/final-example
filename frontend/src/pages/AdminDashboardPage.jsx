@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { getAllFocusLogs } from '../api/focusLogApi.js'
 import { getDashboardSummary } from '../api/dashboardApi.js'
+import { getAllFocusLogs } from '../api/focusLogApi.js'
+import { FOCUS_SCORE, FOCUS_STATUS } from '../constants/index.js'
 
 const dashboardGroups = [
   {
@@ -34,17 +35,17 @@ const dashboardGroups = [
 ]
 
 const STATUS_LABELS = {
-  focused: 'Tập trung',
-  distracted: 'Mất tập trung',
-  no_face: 'Không có mặt',
-  drowsy: 'Buồn ngủ',
+  [FOCUS_STATUS.FOCUSED]: 'Tập trung',
+  [FOCUS_STATUS.DISTRACTED]: 'Mất tập trung',
+  [FOCUS_STATUS.NO_FACE]: 'Không có mặt',
+  [FOCUS_STATUS.DROWSY]: 'Buồn ngủ',
 }
 
 const STATUS_CLASS = {
-  focused: 'focus-status-good',
-  distracted: 'focus-status-bad',
-  no_face: 'focus-status-bad',
-  drowsy: 'focus-status-warn',
+  [FOCUS_STATUS.FOCUSED]: 'focus-status-good',
+  [FOCUS_STATUS.DISTRACTED]: 'focus-status-bad',
+  [FOCUS_STATUS.NO_FACE]: 'focus-status-bad',
+  [FOCUS_STATUS.DROWSY]: 'focus-status-warn',
 }
 
 function formatValue(value, suffix = '') {
@@ -230,7 +231,7 @@ function AdminDashboardPage() {
                     <td>{log.userName || `User #${log.userId}`}</td>
                     <td>{log.lessonTitle || `Bài #${log.lessonId}`}</td>
                     <td>
-                      <span className={`focus-score-chip ${log.focusScore >= 70 ? 'score-good' : log.focusScore >= 40 ? 'score-mid' : 'score-low'}`}>
+                      <span className={`focus-score-chip ${log.focusScore >= FOCUS_SCORE.GOOD ? 'score-good' : log.focusScore >= FOCUS_SCORE.MID ? 'score-mid' : 'score-low'}`}>
                         {log.focusScore != null ? `${Math.round(log.focusScore)}%` : '—'}
                       </span>
                     </td>

@@ -2,26 +2,21 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { getFeedbackByAttemptId } from '../api/feedbackApi.js'
 import { getLessonById, getLessons } from '../api/lessonApi.js'
+import { QUIZ_CONFIG, RECOMMENDATION, ROUTES, STORAGE_KEYS } from '../constants/index.js'
 import { normalizeList, sameId } from '../utils/flowHelpers.js'
 
 function getCurrentUser() {
   try {
-    return JSON.parse(localStorage.getItem('user') || 'null')
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) || 'null')
   } catch {
     return null
   }
 }
 
 function getRecommendationLabel(recommendation) {
-  if (recommendation === 'review_lesson') {
-    return 'Ôn tập bài học'
-  }
-  if (recommendation === 'next_lesson') {
-    return 'Bài học tiếp theo'
-  }
-  if (recommendation === 'practice_more') {
-    return 'Luyện tập thêm'
-  }
+  if (recommendation === RECOMMENDATION.REVIEW_LESSON) return 'Ôn tập bài học'
+  if (recommendation === RECOMMENDATION.NEXT_LESSON) return 'Bài học tiếp theo'
+  if (recommendation === RECOMMENDATION.PRACTICE_MORE) return 'Luyện tập thêm'
   return 'Chưa có gợi ý'
 }
 
@@ -94,10 +89,10 @@ function FeedbackPage() {
       <section className="page-shell wide-shell">
         <p className="alert">{error}</p>
         <div className="actions inline-button">
-          <Link className="primary-button" to="/dashboard">
+          <Link className="primary-button" to={ROUTES.DASHBOARD}>
             Xem bảng điều khiển
           </Link>
-          <Link className="secondary-button" to="/courses">
+          <Link className="secondary-button" to={ROUTES.COURSES}>
             Quay lại khóa học
           </Link>
         </div>
@@ -105,7 +100,7 @@ function FeedbackPage() {
     )
   }
 
-  const passed = (feedback?.quizScore || 0) >= 70
+  const passed = (feedback?.quizScore || 0) >= QUIZ_CONFIG.PASS_SCORE
   const recommendation = feedback?.recommendation
 
   return (
@@ -136,25 +131,25 @@ function FeedbackPage() {
         </dl>
 
         <div className="actions">
-          {recommendation === 'review_lesson' && (
-            <Link className="primary-button" to={`/lessons/${feedback.lessonId}`}>
+          {recommendation === RECOMMENDATION.REVIEW_LESSON && (
+            <Link className="primary-button" to={ROUTES.lessonDetail(feedback.lessonId)}>
               Ôn tập bài học
             </Link>
           )}
-          {recommendation === 'next_lesson' && nextLesson && (
-            <Link className="primary-button" to={`/lessons/${nextLesson.id}`}>
+          {recommendation === RECOMMENDATION.NEXT_LESSON && nextLesson && (
+            <Link className="primary-button" to={ROUTES.lessonDetail(nextLesson.id)}>
               Bài học tiếp theo
             </Link>
           )}
-          {recommendation === 'next_lesson' && !nextLesson && (
-            <Link className="primary-button" to="/dashboard">
+          {recommendation === RECOMMENDATION.NEXT_LESSON && !nextLesson && (
+            <Link className="primary-button" to={ROUTES.DASHBOARD}>
               Xem dashboard
             </Link>
           )}
-          <Link className="secondary-button" to={feedback?.lessonId ? `/lessons/${feedback.lessonId}` : '/courses'}>
+          <Link className="secondary-button" to={feedback?.lessonId ? ROUTES.lessonDetail(feedback.lessonId) : ROUTES.COURSES}>
             Quay lại bài học
           </Link>
-          <Link className="secondary-button" to="/dashboard">
+          <Link className="secondary-button" to={ROUTES.DASHBOARD}>
             Xem bảng điều khiển
           </Link>
         </div>

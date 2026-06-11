@@ -1,7 +1,8 @@
 import axios from "axios";
+import { API_BASE_URL, ROUTES, STORAGE_KEYS } from '../constants/index.js'
 
 const axiosClient = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -45,10 +46,10 @@ axiosClient.interceptors.response.use(
       }
 
       if (error.response.status === 401) {
-        localStorage.removeItem('user')
-        localStorage.removeItem('userId')
-        if (!window.location.pathname.startsWith('/login')) {
-          window.location.href = '/login'
+        localStorage.removeItem(STORAGE_KEYS.USER)
+        localStorage.removeItem(STORAGE_KEYS.USER_ID)
+        if (!window.location.pathname.startsWith(ROUTES.LOGIN)) {
+          window.location.href = ROUTES.LOGIN
         }
       }
     }

@@ -3,10 +3,11 @@ import { Link, useParams } from 'react-router-dom'
 import { getCourseById, getTrendingCourses } from '../api/courseApi.js'
 import { getLessons } from '../api/lessonApi.js'
 import { getProgressByUserId } from '../api/progressApi.js'
+import { CONTENT_STATUS, ROUTES, STORAGE_KEYS } from '../constants/index.js'
 
 function getCurrentUser() {
   try {
-    return JSON.parse(localStorage.getItem('user') || 'null')
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) || 'null')
   } catch {
     return null
   }
@@ -148,7 +149,7 @@ function CourseDetailPage() {
               <h1>{course.title || 'Khóa học chưa đặt tên'}</h1>
             </div>
             <span className="status-badge">
-              {course.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}
+              {course.status === CONTENT_STATUS.PUBLISHED ? 'Đã xuất bản' : 'Bản nháp'}
             </span>
           </div>
 

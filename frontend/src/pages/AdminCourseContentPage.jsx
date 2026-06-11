@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { getCourseById } from '../api/courseApi.js'
 import { uploadFile } from '../api/fileApi.js'
 import { createLesson, deleteLesson, getLessons, updateLesson } from '../api/lessonApi.js'
+import { ROUTES } from '../constants/index.js'
 
 const initialLessonForm = {
   title: '',
@@ -193,7 +194,7 @@ function AdminCourseContentPage() {
 
   return (
     <section className="page-shell wide-shell admin-page">
-      <Link className="text-link" to="/admin/courses">
+      <Link className="text-link" to={ROUTES.ADMIN_COURSES}>
         Quay lại quản lý khóa học
       </Link>
 
@@ -283,7 +284,7 @@ function AdminCourseContentPage() {
                       </div>
                     </div>
                     <div className="content-actions">
-                      <Link className="primary-button compact-button" to={`/admin/lessons/${lesson.id}/questions`}>
+                      <Link className="primary-button compact-button" to={ROUTES.adminLessonQuestions(lesson.id)}>
                         Quản lý câu hỏi
                       </Link>
                       <button className="secondary-button compact-button" type="button" onClick={() => handleEditLesson(lesson)}>

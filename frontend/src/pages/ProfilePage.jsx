@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getCurrentUserProfile } from '../api/userApi.js'
+import { DIFFICULTY, ROLES, ROUTES, STORAGE_KEYS } from '../constants/index.js'
 
 function getStoredSession() {
-  const token = localStorage.getItem('token')
-  const storedUserId = localStorage.getItem('userId')
+  const token = localStorage.getItem(STORAGE_KEYS.TOKEN)
+  const storedUserId = localStorage.getItem(STORAGE_KEYS.USER_ID)
 
   if (storedUserId) {
     return {
@@ -14,7 +15,7 @@ function getStoredSession() {
   }
 
   try {
-    const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
+    const storedUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) || 'null')
 
     return {
       token: token || storedUser?.token || storedUser?.accessToken || '',
@@ -46,18 +47,15 @@ function formatDate(value) {
 }
 
 function formatRole(role) {
-  if (role === 'admin') {
-    return 'Quản trị viên'
-  }
-
+  if (role === ROLES.ADMIN) return 'Quản trị viên'
   return 'Học viên'
 }
 
 function formatLevel(level) {
   const labels = {
-    basic: 'Cơ bản',
-    medium: 'Trung bình',
-    hard: 'Nâng cao',
+    [DIFFICULTY.BASIC]: 'Cơ bản',
+    [DIFFICULTY.MEDIUM]: 'Trung bình',
+    [DIFFICULTY.HARD]: 'Nâng cao',
   }
 
   return labels[level] || level || 'Chưa cập nhật'
@@ -158,10 +156,10 @@ function ProfilePage() {
           </dl>
 
           <div className="profile-actions">
-            <Link className="primary-button" to={profile.role === 'admin' ? '/admin/dashboard' : '/dashboard'}>
+            <Link className="primary-button" to={profile.role === ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD : ROUTES.DASHBOARD}>
               Mở bảng điều khiển
             </Link>
-            <Link className="secondary-button" to="/courses">
+            <Link className="secondary-button" to={ROUTES.COURSES}>
               Xem khóa học
             </Link>
           </div>

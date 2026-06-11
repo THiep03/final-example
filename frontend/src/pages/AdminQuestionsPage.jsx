@@ -6,6 +6,7 @@ import {
   getQuestions,
   updateQuestion,
 } from '../api/questionApi.js'
+import { DIFFICULTY } from '../constants/index.js'
 
 const initialForm = {
   lessonId: '',
@@ -15,16 +16,12 @@ const initialForm = {
   optionC: '',
   optionD: '',
   correctAnswer: 'A',
-  difficultyLevel: 'basic',
+  difficultyLevel: DIFFICULTY.BASIC,
 }
 
 function getDifficultyLabel(level) {
-  if (level === 'medium') {
-    return 'Trung bình'
-  }
-  if (level === 'hard') {
-    return 'Khó'
-  }
+  if (level === DIFFICULTY.MEDIUM) return 'Trung bình'
+  if (level === DIFFICULTY.HARD) return 'Khó'
   return 'Cơ bản'
 }
 

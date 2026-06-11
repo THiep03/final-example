@@ -5,6 +5,7 @@ import { getUserDashboard } from '../api/dashboardApi.js'
 import { getFeedbacksByUserId } from '../api/feedbackApi.js'
 import { getLessons } from '../api/lessonApi.js'
 import { getProgressByUserId } from '../api/progressApi.js'
+import { QUIZ_CONFIG, RECOMMENDATION, ROUTES } from '../constants/index.js'
 import { getStoredUser, normalizeList, toNumericId } from '../utils/flowHelpers.js'
 
 function average(items, field) {
@@ -56,40 +57,24 @@ function getQuizDate(attempt) {
 
 function getRecommendationLabel(value) {
   const labels = {
-    next_lesson: 'Học bài tiếp theo',
-    review_lesson: 'Ôn tập bài học',
-    practice_more: 'Luyện tập thêm',
+    [RECOMMENDATION.NEXT_LESSON]: 'Học bài tiếp theo',
+    [RECOMMENDATION.REVIEW_LESSON]: 'Ôn tập bài học',
+    [RECOMMENDATION.PRACTICE_MORE]: 'Luyện tập thêm',
   }
 
   return labels[value] || 'Chưa có khuyến nghị'
 }
 
 function getFeedbackStatus(feedback) {
-  if (feedback?.recommendation === 'next_lesson' || (feedback?.quizScore ?? 0) >= 70) {
-    return {
-      className: 'is-good',
-      label: 'Kết quả tốt',
-    }
+  if (feedback?.recommendation === RECOMMENDATION.NEXT_LESSON || (feedback?.quizScore ?? 0) >= QUIZ_CONFIG.PASS_SCORE) {
+    return { className: 'is-good', label: 'Kết quả tốt' }
   }
 
-  if (feedback?.recommendation === 'review_lesson') {
-    return {
-      className: 'is-review',
-      label: 'Nên ôn tập lại',
-    }
+  if (feedback?.recommendation === RECOMMENDATION.REVIEW_LESSON) {
+    return { className: 'is-review', label: 'Nên ôn tập lại' }
   }
 
-  if (feedback?.recommendation === 'practice_more') {
-    return {
-      className: 'is-practice',
-      label: 'Cần luyện tập thêm',
-    }
-  }
-
-  return {
-    className: 'is-practice',
-    label: 'Cần luyện tập thêm',
-  }
+  return { className: 'is-practice', label: 'Cần luyện tập thêm' }
 }
 
 function truncateText(value, maxLength = 120) {

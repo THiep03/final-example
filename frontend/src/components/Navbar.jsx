@@ -1,8 +1,9 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { ROLES, ROUTES, STORAGE_KEYS } from '../constants/index.js'
 
 function getStoredUser() {
   try {
-    return JSON.parse(localStorage.getItem('user') || 'null')
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) || 'null')
   } catch {
     return null
   }
@@ -11,56 +12,56 @@ function getStoredUser() {
 function Navbar() {
   const navigate = useNavigate()
   const user = getStoredUser()
-  const isAdmin = user?.role === 'admin'
+  const isAdmin = user?.role === ROLES.ADMIN
   const displayName = user?.name || user?.email || 'Người dùng'
 
   const handleLogout = () => {
-    localStorage.removeItem('user')
-    localStorage.removeItem('userId')
-    localStorage.removeItem('token')
-    navigate('/login')
+    localStorage.removeItem(STORAGE_KEYS.USER)
+    localStorage.removeItem(STORAGE_KEYS.USER_ID)
+    localStorage.removeItem(STORAGE_KEYS.TOKEN)
+    navigate(ROUTES.LOGIN)
   }
 
   return (
     <header className="navbar">
       <div className="navbar-inner">
-        <Link className="brand" to="/">
+        <Link className="brand" to={ROUTES.HOME}>
           <span>HT</span>
           <strong>Học thích ứng</strong>
         </Link>
 
         <nav className="nav-links" aria-label="Điều hướng chính">
-          <NavLink to="/">Trang chủ</NavLink>
-          <NavLink to="/courses">Khóa học</NavLink>
+          <NavLink to={ROUTES.HOME}>Trang chủ</NavLink>
+          <NavLink to={ROUTES.COURSES}>Khóa học</NavLink>
 
           {isAdmin ? (
             <>
-              <NavLink to="/admin/dashboard">Bảng điều khiển Admin</NavLink>
+              <NavLink to={ROUTES.ADMIN_DASHBOARD}>Bảng điều khiển Admin</NavLink>
               <details className="admin-dropdown">
                 <summary>Quản trị</summary>
                 <div className="admin-dropdown-menu">
-                  <NavLink to="/admin/courses">Quản lý khóa học & nội dung</NavLink>
-                  <NavLink to="/admin/lessons">Quản lý bài học</NavLink>
-                  <NavLink to="/admin/questions">Quản lý câu hỏi</NavLink>
-                  <NavLink to="/admin/files">Quản lý file</NavLink>
+                  <NavLink to={ROUTES.ADMIN_COURSES}>Quản lý khóa học & nội dung</NavLink>
+                  <NavLink to={ROUTES.ADMIN_LESSONS}>Quản lý bài học</NavLink>
+                  <NavLink to={ROUTES.ADMIN_QUESTIONS}>Quản lý câu hỏi</NavLink>
+                  <NavLink to={ROUTES.ADMIN_FILES}>Quản lý file</NavLink>
                 </div>
               </details>
             </>
           ) : (
-            user && <NavLink to="/dashboard">Bảng điều khiển</NavLink>
+            user && <NavLink to={ROUTES.DASHBOARD}>Bảng điều khiển</NavLink>
           )}
 
           {!user && (
             <>
-              <NavLink to="/login">Đăng nhập</NavLink>
-              <NavLink to="/register">Đăng ký</NavLink>
+              <NavLink to={ROUTES.LOGIN}>Đăng nhập</NavLink>
+              <NavLink to={ROUTES.REGISTER}>Đăng ký</NavLink>
             </>
           )}
         </nav>
 
         {user && (
           <div className="user-menu">
-            <Link className="user-profile-link" title={displayName} to="/profile">
+            <Link className="user-profile-link" title={displayName} to={ROUTES.PROFILE}>
               {displayName}
             </Link>
             <button className="link-button" type="button" onClick={handleLogout}>

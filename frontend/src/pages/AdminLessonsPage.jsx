@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { getCourses } from '../api/courseApi.js'
 import { uploadFile } from '../api/fileApi.js'
 import { createLesson, deleteLesson, getLessons, updateLesson } from '../api/lessonApi.js'
+import { ROUTES } from '../constants/index.js'
 
 const initialForm = {
   courseId: '',
@@ -311,7 +312,7 @@ function AdminLessonsPage() {
                         <button className="danger-button small-action" type="button" onClick={() => handleDelete(lesson.id)}>
                           Xóa
                         </button>
-                        <Link className="ghost-button small-action" to={`/admin/lessons/${lesson.id}/questions`}>
+                        <Link className="ghost-button small-action" to={ROUTES.adminLessonQuestions(lesson.id)}>
                           Quản lý câu hỏi
                         </Link>
                         <Link className="ghost-button small-action" to={`/lessons/${lesson.id}`}>
