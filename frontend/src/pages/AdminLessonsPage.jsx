@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getCourses } from '../api/courseApi.js'
 import { uploadFile } from '../api/fileApi.js'
@@ -27,6 +27,7 @@ function AdminLessonsPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  const formRef = useRef(null)
   const courseNameById = useMemo(
     () => new Map(courses.map((course) => [Number(course.id), course.title])),
     [courses],
@@ -135,6 +136,7 @@ function AdminLessonsPage() {
     })
     setError('')
     setSuccess('')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleSubmit = async (event) => {
@@ -214,7 +216,7 @@ function AdminLessonsPage() {
       {error && <p className="alert">{error}</p>}
       {success && <p className="success-alert">{success}</p>}
 
-      <form className="admin-form" onSubmit={handleSubmit}>
+      <form className="admin-form" ref={formRef} onSubmit={handleSubmit}>
         <div className="full-field">
           <h2>{editingId ? 'Sửa bài học' : 'Thêm bài học'}</h2>
           <p className="muted">Video bài học chỉ được tải từ máy, hệ thống sẽ tự lưu file và gắn vào bài học.</p>

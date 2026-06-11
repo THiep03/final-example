@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getLessonById } from '../api/lessonApi.js'
 import { createQuestion, deleteQuestion, getQuestionsByLessonId, updateQuestion } from '../api/questionApi.js'
@@ -25,6 +25,7 @@ function getDifficultyLabel(level) {
 
 function AdminLessonQuestionsPage() {
   const { lessonId } = useParams()
+  const formRef = useRef(null)
   const [lesson, setLesson] = useState(null)
   const [questions, setQuestions] = useState([])
   const [form, setForm] = useState(initialQuestionForm)
@@ -106,6 +107,7 @@ function AdminLessonQuestionsPage() {
     })
     setError('')
     setSuccess('')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleSubmit = async (event) => {
@@ -185,7 +187,7 @@ function AdminLessonQuestionsPage() {
           {error && <p className="alert">{error}</p>}
           {success && <p className="success-alert">{success}</p>}
 
-          <form className="admin-form content-form" onSubmit={handleSubmit}>
+          <form className="admin-form content-form" ref={formRef} onSubmit={handleSubmit}>
             <div className="full-field">
               <h2>{editingId ? 'Sửa câu hỏi' : 'Thêm câu hỏi'}</h2>
               <p className="muted">Bài học đã được chọn từ trang trước nên không cần chọn lại.</p>

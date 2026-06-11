@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { getLessons } from '../api/lessonApi.js'
 import {
   createQuestion,
@@ -38,6 +38,7 @@ function AdminQuestionsPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  const formRef = useRef(null)
   const lessonNameById = useMemo(
     () => new Map(lessons.map((lesson) => [Number(lesson.id), lesson.title || `Bài học #${lesson.id}`])),
     [lessons],
@@ -110,6 +111,7 @@ function AdminQuestionsPage() {
     })
     setSuccess('')
     setError('')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleSubmit = async (event) => {
@@ -179,7 +181,7 @@ function AdminQuestionsPage() {
       {error && <p className="alert">{error}</p>}
       {success && <p className="success-alert">{success}</p>}
 
-      <form className="admin-form" onSubmit={handleSubmit}>
+      <form className="admin-form" ref={formRef} onSubmit={handleSubmit}>
         <label>
           Bài học
           <select name="lessonId" value={form.lessonId} onChange={handleChange} required>

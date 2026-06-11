@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { createCourse, deleteCourse, getCourses, updateCourse } from '../api/courseApi.js'
 import { uploadFile } from '../api/fileApi.js'
@@ -17,6 +17,7 @@ function getStatusLabel(status) {
 function AdminCoursesPage() {
   const [courses, setCourses] = useState([])
   const [form, setForm] = useState(initialForm)
+  const formRef = useRef(null)
   const [editingId, setEditingId] = useState(null)
   const [selectedImage, setSelectedImage] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -110,6 +111,7 @@ function AdminCoursesPage() {
     })
     setError('')
     setSuccess('')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleSubmit = async (event) => {
@@ -172,7 +174,7 @@ function AdminCoursesPage() {
       {error && <p className="alert">{error}</p>}
       {success && <p className="success-alert">{success}</p>}
 
-      <form className="admin-form" onSubmit={handleSubmit}>
+      <form className="admin-form" ref={formRef} onSubmit={handleSubmit}>
         <div className="full-field">
           <h2>{editingId ? 'Sửa khóa học' : 'Thêm khóa học'}</h2>
           <p className="muted">Ảnh đại diện chỉ được tải từ máy, hệ thống sẽ tự lưu file và gắn vào khóa học.</p>
