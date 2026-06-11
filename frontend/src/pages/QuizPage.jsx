@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { generateFeedback } from '../api/feedbackApi.js'
 import { answerAdaptiveQuestion, startAdaptiveQuiz } from '../api/quizApi.js'
@@ -40,6 +40,11 @@ function formatElapsedTime(seconds) {
 function QuizPage() {
   const { lessonId } = useParams()
   const user = useMemo(() => getCurrentUser(), [])
+  const isMountedRef = useRef(true)
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => { isMountedRef.current = false }
+  }, [])
   const [attemptId, setAttemptId] = useState(null)
   const [currentQuestion, setCurrentQuestion] = useState(null)
   const [currentDifficulty, setCurrentDifficulty] = useState('basic')
@@ -168,14 +173,20 @@ function QuizPage() {
             userId: user.id,
             lessonId: Number(lessonId),
           })
-          setGeneratedFeedback(feedbackData)
+          if (isMountedRef.current) {
+            setGeneratedFeedback(feedbackData)
+          }
         } catch (feedbackErr) {
-          setFeedbackError(
-            feedbackErr.response?.data?.message ||
-              'Đã nộp bài, nhưng chưa thể tạo phản hồi học tập.',
-          )
+          if (isMountedRef.current) {
+            setFeedbackError(
+              feedbackErr.response?.data?.message ||
+                'Đã nộp bài, nhưng chưa thể tạo phản hồi học tập.',
+            )
+          }
         } finally {
-          setFeedbackGenerating(false)
+          if (isMountedRef.current) {
+            setFeedbackGenerating(false)
+          }
         }
         return
       }

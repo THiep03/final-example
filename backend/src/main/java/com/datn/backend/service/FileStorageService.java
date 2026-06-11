@@ -104,11 +104,23 @@ public class FileStorageService {
 
     @Transactional
     public void deleteFile(Long id) {
-        if (!fileStorageRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File metadata not found");
+        FileStorage fileStorage = fileStorageRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "File metadata not found"));
+
+        if ("local".equals(fileStorage.getStorageProvider()) && fileStorage.getFileUrl() != null) {
+            String fileUrl = fileStorage.getFileUrl();
+            String uploadsPrefix = LOCAL_BASE_URL + "/";
+            if (fileUrl.startsWith(uploadsPrefix)) {
+                String relativePath = fileUrl.substring(uploadsPrefix.length());
+                Path filePath = Paths.get("uploads", relativePath).toAbsolutePath().normalize();
+                try {
+                    Files.deleteIfExists(filePath);
+                } catch (IOException ignored) {
+                }
+            }
         }
 
-        fileStorageRepository.deleteById(id);
+        fileStorageRepository.delete(fileStorage);
     }
 
     private String normalizeFileType(String fileType) {

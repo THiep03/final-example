@@ -43,6 +43,14 @@ axiosClient.interceptors.response.use(
         ...(typeof error.response.data === 'object' && error.response.data !== null ? error.response.data : {}),
         message,
       }
+
+      if (error.response.status === 401) {
+        localStorage.removeItem('user')
+        localStorage.removeItem('userId')
+        if (!window.location.pathname.startsWith('/login')) {
+          window.location.href = '/login'
+        }
+      }
     }
 
     return Promise.reject(error)

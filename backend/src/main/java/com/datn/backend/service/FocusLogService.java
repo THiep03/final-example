@@ -144,19 +144,19 @@ public class FocusLogService {
     private String buildMessage(String recommendation, Float quizScore, Float focusScore) {
         if ("next_lesson".equals(recommendation)) {
             return String.format(
-                    "Ban da hoan thanh tot bai hoc voi diem quiz %.1f va diem tap trung %.1f. Hay chuyen sang bai hoc tiep theo.",
+                    "Bạn đã hoàn thành tốt bài học với điểm quiz %.1f và mức độ tập trung trung bình %.1f. Hãy chuyển sang bài học tiếp theo.",
                     quizScore,
                     focusScore
             );
         }
         if ("review_lesson".equals(recommendation)) {
             return String.format(
-                    "Diem quiz cua ban la %.1f, chua dat muc yeu cau. Hay xem lai bai hoc va lam quiz lai de nam chac kien thuc.",
+                    "Điểm quiz của bạn là %.1f, chưa đạt mức yêu cầu. Bạn nên học lại bài này và làm lại quiz để nắm chắc kiến thức hơn.",
                     quizScore
             );
         }
         return String.format(
-                "Diem tap trung trung binh cua ban la %.1f. Hay luyen tap them va giu moi truong hoc it xao nhang hon.",
+                "Mức độ tập trung trung bình của bạn là %.1f, còn thấp so với mục tiêu. Bạn nên luyện tập thêm và giữ môi trường học ít xao nhãng hơn.",
                 focusScore
         );
     }

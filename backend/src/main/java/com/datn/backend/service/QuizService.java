@@ -278,6 +278,9 @@ public class QuizService {
     }
 
     private String normalizeAnswer(String answer) {
+        if (answer == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selected answer must not be null");
+        }
         return answer.trim().toUpperCase();
     }
 

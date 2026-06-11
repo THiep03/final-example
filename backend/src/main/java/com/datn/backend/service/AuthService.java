@@ -6,11 +6,14 @@ import com.datn.backend.dto.UserResponse;
 import com.datn.backend.entity.User;
 import com.datn.backend.repository.UserRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
+
+    private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
 
     private final UserRepository userRepository;
 
@@ -27,7 +30,7 @@ public class AuthService {
         User user = new User();
         user.setName(request.getName());
         user.setEmail(email);
-        user.setPassword(request.getPassword());
+        user.setPassword(PASSWORD_ENCODER.encode(request.getPassword()));
         user.setRole("student");
         user.setCurrentLevel("basic");
 
@@ -39,7 +42,7 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
 
-        if (!user.getPassword().equals(request.getPassword())) {
+        if (!PASSWORD_ENCODER.matches(request.getPassword(), user.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         }
 
