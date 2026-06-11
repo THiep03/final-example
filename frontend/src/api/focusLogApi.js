@@ -1,5 +1,10 @@
 import axiosClient from './axiosClient'
 
+export const getAllFocusLogs = async () => {
+  const response = await axiosClient.get('/focus-logs')
+  return response.data
+}
+
 export const createFocusLog = async (log) => {
   const response = await axiosClient.post('/focus-logs', log)
   return response.data

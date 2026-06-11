@@ -4182,3 +4182,85 @@ textarea:focus-visible {
 .lesson-note-textarea::placeholder {
   color: var(--text-muted, #94a3b8);
 }
+
+/* Webcam status: drowsy/warning */
+.webcam-status.is-warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+/* Focus log table */
+.focus-log-table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.focus-log-table {
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  min-width: 640px;
+  width: 100%;
+}
+
+.focus-log-table th,
+.focus-log-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.focus-log-table th {
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.focus-log-table tr:last-child td {
+  border-bottom: none;
+}
+
+.focus-log-table tr:hover td {
+  background: var(--surface-soft);
+}
+
+.log-index {
+  color: var(--muted);
+  font-size: 0.78rem;
+  min-width: 32px;
+}
+
+.log-time {
+  color: var(--muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.focus-score-chip {
+  border-radius: 4px;
+  font-weight: 600;
+  padding: 2px 8px;
+}
+
+.focus-status-chip {
+  border-radius: 4px;
+  font-size: 0.8rem;
+  padding: 2px 8px;
+}
+
+.focus-status-good {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.focus-status-bad {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.focus-status-warn {
+  background: var(--warning-bg);
+  color: var(--warning);
+}

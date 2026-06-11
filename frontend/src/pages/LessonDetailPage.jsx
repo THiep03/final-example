@@ -18,6 +18,8 @@ const MODELS_URL = '/models'
 const DETECTION_INTERVAL_MS = 2000
 const LOG_INTERVAL_MS = 15000
 const DISTRACT_ALERT_THRESHOLD = 3
+const EAR_THRESHOLD = 0.22
+const DROWSY_ALERT_THRESHOLD = 4
 
 const getCurrentUser = () => {
   try {
@@ -53,19 +55,50 @@ async function loadModelsOnce() {
   modelsLoaded = true
 }
 
+function euclideanDist(a, b) {
+  return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
+}
+
+function eyeAspectRatio(eye) {
+  const a = euclideanDist(eye[1], eye[5])
+  const b = euclideanDist(eye[2], eye[4])
+  const c = euclideanDist(eye[0], eye[3])
+  return (a + b) / (2 * (c || 1))
+}
+
+function calculateEAR(landmarks) {
+  const leftEAR = eyeAspectRatio(landmarks.getLeftEye())
+  const rightEAR = eyeAspectRatio(landmarks.getRightEye())
+  return (leftEAR + rightEAR) / 2
+}
+
 function estimateHeadPose(landmarks) {
   const nose = landmarks.getNose()
   const leftEye = landmarks.getLeftEye()
   const rightEye = landmarks.getRightEye()
+  const jaw = landmarks.getJawOutline()
   const noseTip = nose[3]
-  const leftCenter = leftEye.reduce((acc, pt) => ({ x: acc.x + pt.x, y: acc.y + pt.y }), { x: 0, y: 0 })
-  const rightCenter = rightEye.reduce((acc, pt) => ({ x: acc.x + pt.x, y: acc.y + pt.y }), { x: 0, y: 0 })
-  leftCenter.x /= leftEye.length
-  rightCenter.x /= rightEye.length
+
+  const leftSum = leftEye.reduce((acc, pt) => ({ x: acc.x + pt.x, y: acc.y + pt.y }), { x: 0, y: 0 })
+  const rightSum = rightEye.reduce((acc, pt) => ({ x: acc.x + pt.x, y: acc.y + pt.y }), { x: 0, y: 0 })
+  const leftCenter = { x: leftSum.x / leftEye.length, y: leftSum.y / leftEye.length }
+  const rightCenter = { x: rightSum.x / rightEye.length, y: rightSum.y / rightEye.length }
+
   const eyeMidX = (leftCenter.x + rightCenter.x) / 2
+  const eyeMidY = (leftCenter.y + rightCenter.y) / 2
   const eyeSpan = Math.abs(rightCenter.x - leftCenter.x)
+
   const horizontalOffset = Math.abs(noseTip.x - eyeMidX) / (eyeSpan || 1)
-  return horizontalOffset < 0.35
+  if (horizontalOffset >= 0.35) return false
+
+  const chin = jaw[8]
+  const faceHeight = chin.y - eyeMidY
+  if (faceHeight > 0) {
+    const noseVerticalRatio = (noseTip.y - eyeMidY) / faceHeight
+    if (noseVerticalRatio < 0.15 || noseVerticalRatio > 0.80) return false
+  }
+
+  return true
 }
 
 function LessonDetailPage() {
@@ -77,6 +110,7 @@ function LessonDetailPage() {
   const focusFramesRef = useRef(0)
   const totalFramesRef = useRef(0)
   const distractedCountRef = useRef(0)
+  const drowsyCountRef = useRef(0)
 
   const [lesson, setLesson] = useState(null)
   const [course, setCourse] = useState(null)
@@ -238,6 +272,7 @@ function LessonDetailPage() {
     focusFramesRef.current = 0
     totalFramesRef.current = 0
     distractedCountRef.current = 0
+    drowsyCountRef.current = 0
 
     detectionTimerRef.current = setInterval(async () => {
       const video = webcamVideoRef.current
@@ -252,6 +287,7 @@ function LessonDetailPage() {
 
         if (!detection) {
           distractedCountRef.current += 1
+          drowsyCountRef.current = 0
           setFocusStatus('no_face')
           if (distractedCountRef.current >= DISTRACT_ALERT_THRESHOLD) {
             setFocusAlert('⚠️ Không phát hiện khuôn mặt! Bạn có đang học không?')
@@ -259,6 +295,18 @@ function LessonDetailPage() {
           return
         }
 
+        const ear = calculateEAR(detection.landmarks)
+        if (ear < EAR_THRESHOLD) {
+          drowsyCountRef.current += 1
+          distractedCountRef.current += 1
+          if (drowsyCountRef.current >= DROWSY_ALERT_THRESHOLD) {
+            setFocusStatus('drowsy')
+            setFocusAlert('⚠️ Phát hiện buồn ngủ! Hãy tỉnh táo và tập trung vào bài học.')
+          }
+          return
+        }
+
+        drowsyCountRef.current = 0
         const focused = estimateHeadPose(detection.landmarks)
         if (focused) {
           focusFramesRef.current += 1
@@ -392,12 +440,14 @@ function LessonDetailPage() {
     focused: 'Đang tập trung',
     distracted: 'Mất tập trung',
     no_face: 'Không phát hiện khuôn mặt',
+    drowsy: 'Phát hiện buồn ngủ',
   }[focusStatus] || 'Chờ phát hiện'
 
   const focusStatusClass = {
     focused: 'is-on',
     distracted: 'is-denied',
     no_face: 'is-denied',
+    drowsy: 'is-warning',
   }[focusStatus] || 'is-off'
 
   return (

@@ -8,7 +8,9 @@ public class FocusLogResponse {
 
     private Long id;
     private Long userId;
+    private String userName;
     private Long lessonId;
+    private String lessonTitle;
     private String status;
     private Float focusScore;
     private LocalDateTime recordedAt;
@@ -19,7 +21,9 @@ public class FocusLogResponse {
         FocusLogResponse response = new FocusLogResponse();
         response.setId(focusLog.getId());
         response.setUserId(focusLog.getUser().getId());
+        response.setUserName(focusLog.getUser().getName());
         response.setLessonId(focusLog.getLesson().getId());
+        response.setLessonTitle(focusLog.getLesson().getTitle());
         response.setStatus(focusLog.getStatus());
         response.setFocusScore(focusLog.getFocusScore());
         response.setRecordedAt(focusLog.getRecordedAt());
@@ -44,12 +48,28 @@ public class FocusLogResponse {
         this.userId = userId;
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
     public Long getLessonId() {
         return lessonId;
     }
 
     public void setLessonId(Long lessonId) {
         this.lessonId = lessonId;
+    }
+
+    public String getLessonTitle() {
+        return lessonTitle;
+    }
+
+    public void setLessonTitle(String lessonTitle) {
+        this.lessonTitle = lessonTitle;
     }
 
     public String getStatus() {

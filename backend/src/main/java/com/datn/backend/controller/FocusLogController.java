@@ -26,6 +26,11 @@ public class FocusLogController {
         this.focusLogService = focusLogService;
     }
 
+    @GetMapping
+    public List<FocusLogResponse> getAllFocusLogs() {
+        return focusLogService.getAllFocusLogs();
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public FocusLogResponse createFocusLog(@Valid @RequestBody FocusLogRequest request) {

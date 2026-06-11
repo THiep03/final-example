@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { getAllFocusLogs } from '../api/focusLogApi.js'
 import { getDashboardSummary } from '../api/dashboardApi.js'
 
 const dashboardGroups = [
@@ -32,6 +33,20 @@ const dashboardGroups = [
   },
 ]
 
+const STATUS_LABELS = {
+  focused: 'Tập trung',
+  distracted: 'Mất tập trung',
+  no_face: 'Không có mặt',
+  drowsy: 'Buồn ngủ',
+}
+
+const STATUS_CLASS = {
+  focused: 'focus-status-good',
+  distracted: 'focus-status-bad',
+  no_face: 'focus-status-bad',
+  drowsy: 'focus-status-warn',
+}
+
 function formatValue(value, suffix = '') {
   if (value === null || value === undefined) {
     return `0${suffix}`
@@ -44,10 +59,24 @@ function formatValue(value, suffix = '') {
   return `${value}${suffix}`
 }
 
+function formatDateTime(isoString) {
+  if (!isoString) return '—'
+  try {
+    const d = new Date(isoString)
+    return d.toLocaleString('vi-VN', { hour12: false })
+  } catch {
+    return isoString
+  }
+}
+
 function AdminDashboardPage() {
   const [summary, setSummary] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  const [focusLogs, setFocusLogs] = useState([])
+  const [logsLoading, setLogsLoading] = useState(true)
+  const [logsError, setLogsError] = useState('')
 
   useEffect(() => {
     let isMounted = true
@@ -71,6 +100,29 @@ function AdminDashboardPage() {
     }
 
     loadSummary()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadLogs = async () => {
+      try {
+        const data = await getAllFocusLogs()
+        if (isMounted) setFocusLogs(Array.isArray(data) ? data : [])
+      } catch (err) {
+        if (isMounted) {
+          setLogsError(err.response?.data?.message || 'Không thể tải nhật ký tập trung.')
+        }
+      } finally {
+        if (isMounted) setLogsLoading(false)
+      }
+    }
+
+    loadLogs()
 
     return () => {
       isMounted = false
@@ -142,6 +194,59 @@ function AdminDashboardPage() {
           </section>
         </>
       )}
+
+      <section className="dashboard-section">
+        <div className="dashboard-section-header">
+          <div>
+            <h2>Nhật ký tập trung người học</h2>
+            <p className="muted">50 bản ghi tập trung gần nhất từ tất cả người học trong hệ thống.</p>
+          </div>
+        </div>
+
+        {logsLoading && <p className="state-message">Đang tải nhật ký...</p>}
+        {logsError && <p className="alert">{logsError}</p>}
+
+        {!logsLoading && !logsError && focusLogs.length === 0 && (
+          <p className="muted">Chưa có dữ liệu nhật ký tập trung.</p>
+        )}
+
+        {!logsLoading && focusLogs.length > 0 && (
+          <div className="focus-log-table-wrapper">
+            <table className="focus-log-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Người học</th>
+                  <th>Bài học</th>
+                  <th>Điểm tập trung</th>
+                  <th>Trạng thái</th>
+                  <th>Thời gian ghi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {focusLogs.map((log, index) => (
+                  <tr key={log.id}>
+                    <td className="log-index">{index + 1}</td>
+                    <td>{log.userName || `User #${log.userId}`}</td>
+                    <td>{log.lessonTitle || `Bài #${log.lessonId}`}</td>
+                    <td>
+                      <span className={`focus-score-chip ${log.focusScore >= 70 ? 'score-good' : log.focusScore >= 40 ? 'score-mid' : 'score-low'}`}>
+                        {log.focusScore != null ? `${Math.round(log.focusScore)}%` : '—'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`focus-status-chip ${STATUS_CLASS[log.status] || 'focus-status-bad'}`}>
+                        {STATUS_LABELS[log.status] || log.status || '—'}
+                      </span>
+                    </td>
+                    <td className="log-time">{formatDateTime(log.recordedAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </section>
   )
 }

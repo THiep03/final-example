@@ -11,6 +11,7 @@ import com.datn.backend.repository.FocusLogRepository;
 import com.datn.backend.repository.LessonRepository;
 import com.datn.backend.repository.QuizAttemptRepository;
 import com.datn.backend.repository.UserRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,6 +76,14 @@ public class FocusLogService {
         }
 
         return focusLogRepository.findByLessonId(lessonId)
+                .stream()
+                .map(FocusLogResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<FocusLogResponse> getAllFocusLogs() {
+        return focusLogRepository.findLatestWithDetails(PageRequest.of(0, 50))
                 .stream()
                 .map(FocusLogResponse::from)
                 .toList();
