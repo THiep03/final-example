@@ -1,5 +1,6 @@
 package com.datn.backend.entity;
 
+import com.datn.backend.constants.AppConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,10 +30,10 @@ public class User {
     private String password;
 
     @Column(length = 20)
-    private String role = "student";
+    private String role = AppConstants.Role.STUDENT;
 
     @Column(name = "current_level", length = 20)
-    private String currentLevel = "basic";
+    private String currentLevel = AppConstants.Difficulty.BASIC;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -46,10 +47,10 @@ public class User {
         createdAt = now;
         updatedAt = now;
         if (role == null || role.isBlank()) {
-            role = "student";
+            role = AppConstants.Role.STUDENT;
         }
         if (currentLevel == null || currentLevel.isBlank()) {
-            currentLevel = "basic";
+            currentLevel = AppConstants.Difficulty.BASIC;
         }
     }
 

@@ -1,5 +1,6 @@
 package com.datn.backend.service;
 
+import com.datn.backend.constants.AppConstants;
 import com.datn.backend.dto.LoginRequest;
 import com.datn.backend.dto.RegisterRequest;
 import com.datn.backend.dto.UserResponse;
@@ -31,8 +32,8 @@ public class AuthService {
         user.setName(request.getName());
         user.setEmail(email);
         user.setPassword(PASSWORD_ENCODER.encode(request.getPassword()));
-        user.setRole("student");
-        user.setCurrentLevel("basic");
+        user.setRole(AppConstants.Role.STUDENT);
+        user.setCurrentLevel(AppConstants.Difficulty.BASIC);
 
         return UserResponse.from(userRepository.save(user));
     }

@@ -1,5 +1,6 @@
 package com.datn.backend.service;
 
+import com.datn.backend.constants.AppConstants;
 import com.datn.backend.dto.QuizAttemptResponse;
 import com.datn.backend.dto.StartQuizRequest;
 import com.datn.backend.dto.SubmitAnswerRequest;
@@ -33,8 +34,6 @@ import java.util.Set;
 
 @Service
 public class QuizService {
-
-    private static final float PASS_SCORE = 70.0F;
 
     private final QuizAttemptRepository quizAttemptRepository;
     private final QuizAnswerRepository quizAnswerRepository;
@@ -213,7 +212,7 @@ public class QuizService {
         attempt.setTotalQuestions(totalQuestions);
         attempt.setCorrectAnswers(correctAnswers);
         attempt.setScore(score);
-        attempt.setResultStatus(score >= PASS_SCORE ? "pass" : "fail");
+        attempt.setResultStatus(score >= AppConstants.QuizResult.PASS_SCORE ? AppConstants.QuizResult.PASS : AppConstants.QuizResult.FAIL);
         attempt.setFinishedAt(LocalDateTime.now());
 
         QuizAttempt savedAttempt = quizAttemptRepository.save(attempt);
@@ -297,7 +296,7 @@ public class QuizService {
         attempt.setCorrectAnswers(correctAnswers);
         attempt.setTotalQuestions(totalQuestions);
         attempt.setScore(finalScore);
-        attempt.setResultStatus(finalScore >= PASS_SCORE ? "pass" : "fail");
+        attempt.setResultStatus(finalScore >= AppConstants.QuizResult.PASS_SCORE ? AppConstants.QuizResult.PASS : AppConstants.QuizResult.FAIL);
         attempt.setFinishedAt(LocalDateTime.now());
 
         QuizAttempt savedAttempt = quizAttemptRepository.save(attempt);
@@ -310,7 +309,7 @@ public class QuizService {
         response.setNextDifficulty(nextDifficulty);
         response.setCurrentScore(finalScore);
         response.setFinalScore(finalScore);
-        response.setResultStatus(finalScore >= PASS_SCORE ? "pass" : "fail");
+        response.setResultStatus(finalScore >= AppConstants.QuizResult.PASS_SCORE ? AppConstants.QuizResult.PASS : AppConstants.QuizResult.FAIL);
         response.setCorrectAnswers(correctAnswers);
         response.setAnsweredCount(answeredCount);
         response.setTotalQuestions(totalQuestions);
@@ -358,9 +357,9 @@ public class QuizService {
     private boolean isFastAnswer(String difficulty, Integer responseTimeSeconds) {
         int responseTime = responseTimeSeconds == null ? Integer.MAX_VALUE : responseTimeSeconds;
         return switch (normalizeDifficulty(difficulty)) {
-            case "hard" -> responseTime <= 45;
-            case "medium" -> responseTime <= 30;
-            default -> responseTime <= 20;
+            case AppConstants.Difficulty.HARD -> responseTime <= AppConstants.QuizResult.RESPONSE_TIME_HARD;
+            case AppConstants.Difficulty.MEDIUM -> responseTime <= AppConstants.QuizResult.RESPONSE_TIME_MEDIUM;
+            default -> responseTime <= AppConstants.QuizResult.RESPONSE_TIME_BASIC;
         };
     }
 
@@ -368,33 +367,33 @@ public class QuizService {
         String difficulty = normalizeDifficulty(currentDifficulty);
         if (correct && fast) {
             return switch (difficulty) {
-                case "basic" -> "medium";
-                case "medium" -> "hard";
-                default -> "hard";
+                case AppConstants.Difficulty.BASIC -> AppConstants.Difficulty.MEDIUM;
+                case AppConstants.Difficulty.MEDIUM -> AppConstants.Difficulty.HARD;
+                default -> AppConstants.Difficulty.HARD;
             };
         }
         if (correct) {
             return difficulty;
         }
         return switch (difficulty) {
-            case "hard" -> "medium";
-            case "medium" -> "basic";
-            default -> "basic";
+            case AppConstants.Difficulty.HARD -> AppConstants.Difficulty.MEDIUM;
+            case AppConstants.Difficulty.MEDIUM -> AppConstants.Difficulty.BASIC;
+            default -> AppConstants.Difficulty.BASIC;
         };
     }
 
     private List<String> fallbackDifficulties(String difficulty) {
         return switch (normalizeDifficulty(difficulty)) {
-            case "hard" -> List.of("hard", "medium", "basic");
-            case "medium" -> List.of("medium", "basic", "hard");
-            default -> List.of("basic", "medium", "hard");
+            case AppConstants.Difficulty.HARD -> List.of(AppConstants.Difficulty.HARD, AppConstants.Difficulty.MEDIUM, AppConstants.Difficulty.BASIC);
+            case AppConstants.Difficulty.MEDIUM -> List.of(AppConstants.Difficulty.MEDIUM, AppConstants.Difficulty.BASIC, AppConstants.Difficulty.HARD);
+            default -> List.of(AppConstants.Difficulty.BASIC, AppConstants.Difficulty.MEDIUM, AppConstants.Difficulty.HARD);
         };
     }
 
     private String normalizeDifficulty(String difficulty) {
-        if ("medium".equals(difficulty) || "hard".equals(difficulty)) {
+        if (AppConstants.Difficulty.MEDIUM.equals(difficulty) || AppConstants.Difficulty.HARD.equals(difficulty)) {
             return difficulty;
         }
-        return "basic";
+        return AppConstants.Difficulty.BASIC;
     }
 }

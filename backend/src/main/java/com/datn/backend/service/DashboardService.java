@@ -1,5 +1,6 @@
 package com.datn.backend.service;
 
+import com.datn.backend.constants.AppConstants;
 import com.datn.backend.dto.DashboardSummaryResponse;
 import com.datn.backend.dto.FeedbackResponse;
 import com.datn.backend.dto.FocusLogResponse;
@@ -77,9 +78,9 @@ public class DashboardService {
         response.setTotalQuizAttempts(quizAttemptRepository.count());
         response.setAverageQuizScore(defaultDouble(quizAttemptRepository.averageQuizScore()));
         response.setAverageFocusScore(defaultDouble(focusLogRepository.averageFocusScore()));
-        response.setTotalViews(lessonInteractionRepository.countByAction("view"));
-        response.setTotalLikes(lessonInteractionRepository.countByAction("like"));
-        response.setTotalDislikes(lessonInteractionRepository.countByAction("dislike"));
+        response.setTotalViews(lessonInteractionRepository.countByAction(AppConstants.LessonAction.VIEW));
+        response.setTotalLikes(lessonInteractionRepository.countByAction(AppConstants.LessonAction.LIKE));
+        response.setTotalDislikes(lessonInteractionRepository.countByAction(AppConstants.LessonAction.DISLIKE));
         return response;
     }
 
@@ -120,9 +121,9 @@ public class DashboardService {
         response.setQuizAttemptsCount(quizAttemptRepository.countByLessonId(lessonId));
         response.setAverageQuizScore(defaultDouble(quizAttemptRepository.averageQuizScoreByLessonId(lessonId)));
         response.setAverageFocusScore(defaultDouble(focusLogRepository.averageFocusScoreByLessonId(lessonId)));
-        response.setTotalViews(lessonInteractionRepository.countByLessonIdAndAction(lessonId, "view"));
-        response.setTotalLikes(lessonInteractionRepository.countByLessonIdAndAction(lessonId, "like"));
-        response.setTotalDislikes(lessonInteractionRepository.countByLessonIdAndAction(lessonId, "dislike"));
+        response.setTotalViews(lessonInteractionRepository.countByLessonIdAndAction(lessonId, AppConstants.LessonAction.VIEW));
+        response.setTotalLikes(lessonInteractionRepository.countByLessonIdAndAction(lessonId, AppConstants.LessonAction.LIKE));
+        response.setTotalDislikes(lessonInteractionRepository.countByLessonIdAndAction(lessonId, AppConstants.LessonAction.DISLIKE));
         return response;
     }
 

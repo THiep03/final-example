@@ -1,5 +1,6 @@
 package com.datn.backend.service;
 
+import com.datn.backend.constants.AppConstants;
 import com.datn.backend.dto.CourseRequest;
 import com.datn.backend.dto.CourseResponse;
 import com.datn.backend.dto.CourseTrendingResponse;
@@ -53,9 +54,9 @@ public class CourseService {
     }
 
     private CourseTrendingResponse toTrendingResponse(Course course) {
-        Long totalViews = lessonInteractionRepository.countByLessonCourseIdAndAction(course.getId(), "view");
-        Long totalLikes = lessonInteractionRepository.countByLessonCourseIdAndAction(course.getId(), "like");
-        Long totalDislikes = lessonInteractionRepository.countByLessonCourseIdAndAction(course.getId(), "dislike");
+        Long totalViews = lessonInteractionRepository.countByLessonCourseIdAndAction(course.getId(), AppConstants.LessonAction.VIEW);
+        Long totalLikes = lessonInteractionRepository.countByLessonCourseIdAndAction(course.getId(), AppConstants.LessonAction.LIKE);
+        Long totalDislikes = lessonInteractionRepository.countByLessonCourseIdAndAction(course.getId(), AppConstants.LessonAction.DISLIKE);
 
         return CourseTrendingResponse.from(course, totalViews, totalLikes, totalDislikes);
     }

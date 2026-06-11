@@ -1,5 +1,6 @@
 package com.datn.backend.entity;
 
+import com.datn.backend.constants.AppConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,10 +24,10 @@ public class FileStorage {
     private String fileName;
 
     @Column(name = "file_type", length = 20)
-    private String fileType = "video";
+    private String fileType = AppConstants.FileType.VIDEO;
 
     @Column(name = "storage_provider", length = 30)
-    private String storageProvider = "local";
+    private String storageProvider = AppConstants.StorageProvider.LOCAL;
 
     @Column(name = "file_url", length = 500)
     private String fileUrl;
@@ -52,10 +53,10 @@ public class FileStorage {
         createdAt = now;
         updatedAt = now;
         if (fileType == null || fileType.isBlank()) {
-            fileType = "video";
+            fileType = AppConstants.FileType.VIDEO;
         }
         if (storageProvider == null || storageProvider.isBlank()) {
-            storageProvider = "local";
+            storageProvider = AppConstants.StorageProvider.LOCAL;
         }
     }
 

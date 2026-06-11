@@ -1,5 +1,6 @@
 package com.datn.backend.service;
 
+import com.datn.backend.constants.AppConstants;
 import com.datn.backend.dto.LessonInteractionRequest;
 import com.datn.backend.dto.LessonInteractionReactionResponse;
 import com.datn.backend.dto.LessonInteractionResponse;
@@ -23,7 +24,7 @@ import java.util.Set;
 @Service
 public class LessonInteractionService {
 
-    private static final List<String> REACTION_ACTIONS = List.of("like", "dislike");
+    private static final List<String> REACTION_ACTIONS = List.of(AppConstants.LessonAction.LIKE, AppConstants.LessonAction.DISLIKE);
 
     private final LessonInteractionRepository lessonInteractionRepository;
     private final UserRepository userRepository;
@@ -138,9 +139,9 @@ public class LessonInteractionService {
 
         return new LessonInteractionStatsResponse(
                 lessonId,
-                lessonInteractionRepository.countByLessonIdAndAction(lessonId, "view"),
-                lessonInteractionRepository.countByLessonIdAndAction(lessonId, "like"),
-                lessonInteractionRepository.countByLessonIdAndAction(lessonId, "dislike")
+                lessonInteractionRepository.countByLessonIdAndAction(lessonId, AppConstants.LessonAction.VIEW),
+                lessonInteractionRepository.countByLessonIdAndAction(lessonId, AppConstants.LessonAction.LIKE),
+                lessonInteractionRepository.countByLessonIdAndAction(lessonId, AppConstants.LessonAction.DISLIKE)
         );
     }
 

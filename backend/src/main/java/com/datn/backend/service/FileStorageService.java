@@ -1,5 +1,6 @@
 package com.datn.backend.service;
 
+import com.datn.backend.constants.AppConstants;
 import com.datn.backend.dto.FileStorageRequest;
 import com.datn.backend.dto.FileStorageResponse;
 import com.datn.backend.entity.FileStorage;
@@ -75,7 +76,7 @@ public class FileStorageService {
             FileStorage fileStorage = new FileStorage();
             fileStorage.setFileName(originalFileName);
             fileStorage.setFileType(normalizedFileType);
-            fileStorage.setStorageProvider("local");
+            fileStorage.setStorageProvider(AppConstants.StorageProvider.LOCAL);
             fileStorage.setFileUrl(LOCAL_BASE_URL + "/" + folderName + "/" + storedFileName);
             fileStorage.setDriveFileId(null);
             fileStorage.setMimeType(file.getContentType());
@@ -107,7 +108,7 @@ public class FileStorageService {
         FileStorage fileStorage = fileStorageRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "File metadata not found"));
 
-        if ("local".equals(fileStorage.getStorageProvider()) && fileStorage.getFileUrl() != null) {
+        if (AppConstants.StorageProvider.LOCAL.equals(fileStorage.getStorageProvider()) && fileStorage.getFileUrl() != null) {
             String fileUrl = fileStorage.getFileUrl();
             String uploadsPrefix = LOCAL_BASE_URL + "/";
             if (fileUrl.startsWith(uploadsPrefix)) {
@@ -129,7 +130,9 @@ public class FileStorageService {
         }
 
         String normalizedFileType = fileType.trim().toLowerCase();
-        if (!normalizedFileType.matches("video|image|document")) {
+        if (!normalizedFileType.equals(AppConstants.FileType.VIDEO)
+                && !normalizedFileType.equals(AppConstants.FileType.IMAGE)
+                && !normalizedFileType.equals(AppConstants.FileType.DOCUMENT)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File type must be video, image, or document");
         }
 
@@ -137,12 +140,12 @@ public class FileStorageService {
     }
 
     private String getFolderName(String fileType) {
-        if ("image".equals(fileType)) {
-            return "images";
+        if (AppConstants.FileType.IMAGE.equals(fileType)) {
+            return AppConstants.FileFolder.IMAGES;
         }
-        if ("document".equals(fileType)) {
-            return "documents";
+        if (AppConstants.FileType.DOCUMENT.equals(fileType)) {
+            return AppConstants.FileFolder.DOCUMENTS;
         }
-        return "videos";
+        return AppConstants.FileFolder.VIDEOS;
     }
 }

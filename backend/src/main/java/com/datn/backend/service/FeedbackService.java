@@ -1,5 +1,6 @@
 package com.datn.backend.service;
 
+import com.datn.backend.constants.AppConstants;
 import com.datn.backend.dto.FeedbackRequest;
 import com.datn.backend.dto.FeedbackResponse;
 import com.datn.backend.entity.Feedback;
@@ -119,27 +120,24 @@ public class FeedbackService {
     }
 
     private String buildRecommendation(Float quizScore, Float focusScore) {
-        if (quizScore >= 70.0F && focusScore >= 70.0F) {
-            return "next_lesson";
+        if (quizScore >= AppConstants.QuizResult.PASS_SCORE && focusScore >= AppConstants.QuizResult.PASS_SCORE) {
+            return AppConstants.Recommendation.NEXT_LESSON;
         }
-        if (quizScore < 70.0F) {
-            return "review_lesson";
+        if (quizScore < AppConstants.QuizResult.PASS_SCORE) {
+            return AppConstants.Recommendation.REVIEW_LESSON;
         }
-        if (focusScore < 70.0F) {
-            return "practice_more";
-        }
-        return "practice_more";
+        return AppConstants.Recommendation.PRACTICE_MORE;
     }
 
     private String buildMessage(String recommendation, Float quizScore, Float focusScore) {
-        if ("next_lesson".equals(recommendation)) {
+        if (AppConstants.Recommendation.NEXT_LESSON.equals(recommendation)) {
             return String.format(
                     "Bạn đã hoàn thành tốt bài học với điểm quiz %.1f và mức độ tập trung trung bình %.1f. Hãy chuyển sang bài học tiếp theo.",
                     quizScore,
                     focusScore
             );
         }
-        if ("review_lesson".equals(recommendation)) {
+        if (AppConstants.Recommendation.REVIEW_LESSON.equals(recommendation)) {
             return String.format(
                     "Điểm quiz của bạn là %.1f, chưa đạt mức yêu cầu. Bạn nên học lại bài này và làm lại quiz để nắm chắc kiến thức hơn.",
                     quizScore

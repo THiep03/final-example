@@ -1,5 +1,6 @@
 package com.datn.backend.entity;
 
+import com.datn.backend.constants.AppConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,7 +30,7 @@ public class Course {
     private String thumbnailUrl;
 
     @Column(length = 20)
-    private String status = "draft";
+    private String status = AppConstants.CourseStatus.DRAFT;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -43,7 +44,7 @@ public class Course {
         createdAt = now;
         updatedAt = now;
         if (status == null || status.isBlank()) {
-            status = "draft";
+            status = AppConstants.CourseStatus.DRAFT;
         }
     }
 
