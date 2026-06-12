@@ -19,3 +19,16 @@ export const updateUser = async (id, data) => {
 export const deleteUser = async (id) => {
   await axiosClient.delete(`/users/${id}`)
 }
+
+export const uploadUserAvatar = async (userId, file) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  const response = await axiosClient.post(`/users/${userId}/avatar`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return response.data
+}
+
+export const changePassword = async (userId, data) => {
+  await axiosClient.post(`/users/${userId}/change-password`, data)
+}

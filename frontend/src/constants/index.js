@@ -13,6 +13,7 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   COURSES: '/courses',
   PROFILE: '/profile',
+  CHANGE_PASSWORD: '/change-password',
   courseDetail: (id) => `/courses/${id}`,
   lessonDetail: (id) => `/lessons/${id}`,
   quizPage: (lessonId) => `/quiz/${lessonId}`,

@@ -2,6 +2,7 @@ package com.datn.backend.dto;
 
 import com.datn.backend.entity.User;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class UserResponse {
@@ -11,6 +12,12 @@ public class UserResponse {
     private String email;
     private String role;
     private String currentLevel;
+    private String phone;
+    private LocalDate dateOfBirth;
+    private String gender;
+    private String school;
+    private String bio;
+    private String avatarUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -21,6 +28,12 @@ public class UserResponse {
         response.setEmail(user.getEmail());
         response.setRole(user.getRole());
         response.setCurrentLevel(user.getCurrentLevel());
+        response.setPhone(user.getPhone());
+        response.setDateOfBirth(user.getDateOfBirth());
+        response.setGender(user.getGender());
+        response.setSchool(user.getSchool());
+        response.setBio(user.getBio());
+        response.setAvatarUrl(user.getAvatarUrl());
         response.setCreatedAt(user.getCreatedAt());
         response.setUpdatedAt(user.getUpdatedAt());
         return response;
@@ -81,4 +94,22 @@ public class UserResponse {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public LocalDate getDateOfBirth() { return dateOfBirth; }
+    public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
+    public String getSchool() { return school; }
+    public void setSchool(String school) { this.school = school; }
+
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
+
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
 }

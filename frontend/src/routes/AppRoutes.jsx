@@ -15,6 +15,7 @@ import CoursesPage from '../pages/CoursesPage.jsx'
 import FeedbackPage from '../pages/FeedbackPage.jsx'
 import Home from '../pages/Home.jsx'
 import LessonDetailPage from '../pages/LessonDetailPage.jsx'
+import ChangePasswordPage from '../pages/ChangePasswordPage.jsx'
 import Login from '../pages/Login.jsx'
 import ProfilePage from '../pages/ProfilePage.jsx'
 import QuizPage from '../pages/QuizPage.jsx'
@@ -43,6 +44,7 @@ function AppRoutes() {
             <Route path="/quiz/:lessonId" element={<QuizPage />} />
             <Route path="/feedback/:attemptId" element={<FeedbackPage />} />
             <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+            <Route path={ROUTES.CHANGE_PASSWORD} element={<ChangePasswordPage />} />
           </Route>
 
           <Route element={<ProtectedRoute requireAdmin />}>

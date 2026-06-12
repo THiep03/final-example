@@ -98,11 +98,21 @@ function AdminDropdown() {
   )
 }
 
+function getInitial(name, email) {
+  return (name || email || '?').trim().charAt(0).toUpperCase()
+}
+
 function Navbar() {
   const navigate = useNavigate()
-  const user = getStoredUser()
+  const [user, setUser] = useState(getStoredUser)
   const isAdmin = user?.role === ROLES.ADMIN
   const displayName = user?.name || user?.email || 'Người dùng'
+
+  useEffect(() => {
+    const refresh = () => setUser(getStoredUser())
+    window.addEventListener('userUpdated', refresh)
+    return () => window.removeEventListener('userUpdated', refresh)
+  }, [])
 
   const handleLogout = () => {
     localStorage.removeItem(STORAGE_KEYS.USER)
@@ -142,8 +152,13 @@ function Navbar() {
 
         {user && (
           <div className="user-menu">
-            <Link className="user-profile-link" title={displayName} to={ROUTES.PROFILE}>
-              {displayName}
+            <Link className="navbar-user-profile" title={`Hồ sơ: ${displayName}`} to={ROUTES.PROFILE}>
+              <div className="navbar-avatar">
+                {user.avatarUrl
+                  ? <img src={user.avatarUrl} alt={displayName} className="navbar-avatar-img" />
+                  : <span className="navbar-avatar-initial">{getInitial(user.name, user.email)}</span>}
+              </div>
+              <span className="navbar-display-name">{displayName}</span>
             </Link>
             <button className="link-button" type="button" onClick={handleLogout}>
               Đăng xuất

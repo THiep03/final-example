@@ -10,6 +10,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -34,6 +35,24 @@ public class User {
 
     @Column(name = "current_level", length = 20)
     private String currentLevel = AppConstants.Difficulty.BASIC;
+
+    @Column(length = 20)
+    private String phone;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(length = 10)
+    private String gender;
+
+    @Column(length = 255)
+    private String school;
+
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -122,4 +141,22 @@ public class User {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public LocalDate getDateOfBirth() { return dateOfBirth; }
+    public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
+    public String getSchool() { return school; }
+    public void setSchool(String school) { this.school = school; }
+
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
+
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
 }

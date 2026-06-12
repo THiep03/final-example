@@ -19,6 +19,13 @@ CREATE TABLE users (
     current_level ENUM('basic', 'medium', 'hard')
     DEFAULT 'basic',
 
+    phone VARCHAR(20) NULL,
+    date_of_birth DATE NULL,
+    gender VARCHAR(10) NULL,
+    school VARCHAR(255) NULL,
+    bio TEXT NULL,
+    avatar_url VARCHAR(500) NULL,
+
     created_at TIMESTAMP NULL,
     updated_at TIMESTAMP NULL
 );
@@ -310,3 +317,15 @@ CREATE TABLE learning_progress (
         REFERENCES lessons(id)
         ON DELETE CASCADE
 );
+
+-- =========================
+-- MIGRATION: thêm trường mới vào users
+-- Chạy block này nếu database đã tồn tại (không chạy lại CREATE TABLE)
+-- =========================
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS phone         VARCHAR(20)  NULL,
+    ADD COLUMN IF NOT EXISTS date_of_birth DATE         NULL,
+    ADD COLUMN IF NOT EXISTS gender        VARCHAR(10)  NULL,
+    ADD COLUMN IF NOT EXISTS school        VARCHAR(255) NULL,
+    ADD COLUMN IF NOT EXISTS bio           TEXT         NULL,
+    ADD COLUMN IF NOT EXISTS avatar_url    VARCHAR(500) NULL;
