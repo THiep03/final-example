@@ -2562,6 +2562,216 @@ textarea:focus {
   padding: 10px 12px;
 }
 
+/* ── Lesson admin form ───────────────────────────────────────── */
+.lesson-admin-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.lesson-form-header {
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+}
+
+.lesson-form-header h2 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.lesson-form-body {
+  display: grid;
+  gap: 0;
+}
+
+.lesson-form-section {
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  gap: 14px;
+  padding: 20px 24px;
+}
+
+.lesson-form-section:last-child {
+  border-bottom: none;
+}
+
+.lesson-form-section-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.lesson-form-row {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lesson-form-field {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 6px;
+}
+
+.lesson-form-field input,
+.lesson-form-field select,
+.lesson-form-field textarea {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.lesson-form-field.span-2 {
+  grid-column: span 2;
+}
+
+.field-required {
+  color: #ef4444;
+}
+
+/* video source tabs */
+.video-source-tabs {
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  width: fit-content;
+}
+
+.video-source-tab {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 6px;
+  padding: 7px 16px;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.video-source-tab:hover {
+  background: var(--surface);
+  color: #334155;
+}
+
+.video-source-tab.active {
+  background: var(--surface);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  color: #1d4ed8;
+}
+
+.tab-icon {
+  font-size: 11px;
+}
+
+/* youtube url input */
+.youtube-input-wrap {
+  align-items: center;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  padding: 0 14px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.youtube-input-wrap:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.youtube-icon {
+  color: #ef4444;
+  flex-shrink: 0;
+  font-size: 15px;
+}
+
+.youtube-url-input {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  flex: 1;
+  font-size: 14px;
+  outline: none;
+  padding: 12px 0;
+}
+
+.youtube-url-input:focus {
+  box-shadow: none;
+}
+
+/* upload drop zone */
+.upload-drop-zone {
+  align-items: center;
+  background: var(--surface-soft);
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 28px 20px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.upload-drop-zone:hover {
+  background: #f0f7ff;
+  border-color: #93c5fd;
+}
+
+.upload-drop-zone input[type="file"] {
+  display: none;
+}
+
+.upload-drop-icon {
+  background: #dbeafe;
+  border-radius: 50%;
+  color: #1d4ed8;
+  display: flex;
+  font-size: 18px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+}
+
+.upload-drop-text {
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.upload-drop-hint {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.lesson-form-footer {
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  padding: 16px 24px;
+}
+/* ─────────────────────────────────────────────────────────────── */
+
 .content-lesson-list,
 .content-question-list {
   display: grid;
@@ -2772,11 +2982,17 @@ textarea:focus {
 
 .lesson-video-frame .lesson-video {
   background: #0f172a;
+  border: none;
   border-radius: var(--radius);
   height: 100%;
   min-height: 0;
   object-fit: contain;
   width: 100%;
+}
+
+.lesson-video-frame iframe.lesson-video {
+  display: block;
+  object-fit: unset;
 }
 
 .lesson-video-frame .video-placeholder {

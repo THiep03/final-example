@@ -93,6 +93,26 @@ function estimateHeadPose(landmarks) {
   return true
 }
 
+function getYouTubeEmbedUrl(url) {
+  if (!url) return null
+  try {
+    const u = new URL(url)
+    if (u.hostname === 'youtu.be') {
+      return `https://www.youtube.com/embed${u.pathname}`
+    }
+    if (u.hostname.includes('youtube.com')) {
+      if (u.pathname === '/watch') {
+        const v = u.searchParams.get('v')
+        return v ? `https://www.youtube.com/embed/${v}` : null
+      }
+      if (u.pathname.startsWith('/embed/')) return url
+    }
+  } catch {
+    return null
+  }
+  return null
+}
+
 function LessonDetailPage() {
   const { id } = useParams()
   const webcamVideoRef = useRef(null)
@@ -457,7 +477,15 @@ function LessonDetailPage() {
               </div>
             </div>
             <div className="lesson-video-frame">
-              {lesson.videoUrl && !videoError ? (
+              {lesson.videoUrl && getYouTubeEmbedUrl(lesson.videoUrl) ? (
+                <iframe
+                  className="lesson-video"
+                  src={getYouTubeEmbedUrl(lesson.videoUrl)}
+                  title={lesson.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              ) : lesson.videoUrl && !videoError ? (
                 <video className="lesson-video" controls src={lesson.videoUrl} onError={() => setVideoError(true)}>
                   Trình duyệt của bạn không hỗ trợ phát video.
                 </video>

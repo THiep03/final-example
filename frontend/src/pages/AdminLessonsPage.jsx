@@ -20,6 +20,7 @@ function AdminLessonsPage() {
   const [courses, setCourses] = useState([])
   const [form, setForm] = useState(initialForm)
   const [editingId, setEditingId] = useState(null)
+  const [videoMode, setVideoMode] = useState('youtube')
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [uploadedVideo, setUploadedVideo] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -120,12 +121,15 @@ function AdminLessonsPage() {
     setEditingId(null)
     setSelectedVideo(null)
     setUploadedVideo(null)
+    setVideoMode('youtube')
   }
 
   const handleEdit = (lesson) => {
     setEditingId(lesson.id)
     setSelectedVideo(null)
     setUploadedVideo(null)
+    const isYoutube = lesson.videoUrl && (lesson.videoUrl.includes('youtube.com') || lesson.videoUrl.includes('youtu.be'))
+    setVideoMode(lesson.videoFileId ? 'upload' : isYoutube ? 'youtube' : 'youtube')
     setForm({
       courseId: lesson.courseId || '',
       videoFileId: lesson.videoFileId || '',
@@ -150,15 +154,21 @@ function AdminLessonsPage() {
       return
     }
 
-    if (!editingId && !form.videoUrl && !uploadedVideo?.fileUrl) {
-      setError('Vui lòng tải video bài học.')
-      return
+    if (!editingId) {
+      if (videoMode === 'youtube' && !form.videoUrl.trim()) {
+        setError('Vui lòng nhập link YouTube.')
+        return
+      }
+      if (videoMode === 'upload' && !uploadedVideo?.fileUrl) {
+        setError('Vui lòng tải video bài học.')
+        return
+      }
     }
 
     setSaving(true)
     try {
-      const videoFileId = uploadedVideo?.id || (form.videoFileId ? Number(form.videoFileId) : null)
-      const videoUrl = uploadedVideo?.fileUrl || form.videoUrl
+      const videoFileId = videoMode === 'upload' ? (uploadedVideo?.id || (form.videoFileId ? Number(form.videoFileId) : null)) : null
+      const videoUrl = videoMode === 'youtube' ? form.videoUrl.trim() : (uploadedVideo?.fileUrl || form.videoUrl)
 
       const payload = {
         ...form,
@@ -217,59 +227,114 @@ function AdminLessonsPage() {
       {error && <p className="alert">{error}</p>}
       {success && <p className="success-alert">{success}</p>}
 
-      <form className="admin-form" ref={formRef} onSubmit={handleSubmit}>
-        <div className="full-field">
-          <h2>{editingId ? 'Sửa bài học' : 'Thêm bài học'}</h2>
-          <p className="muted">Video bài học chỉ được tải từ máy, hệ thống sẽ tự lưu file và gắn vào bài học.</p>
+      <form className="lesson-admin-form" ref={formRef} onSubmit={handleSubmit}>
+        <div className="lesson-form-header">
+          <div>
+            <p className="eyebrow">{editingId ? 'Chỉnh sửa' : 'Tạo mới'}</p>
+            <h2>{editingId ? 'Sửa bài học' : 'Thêm bài học'}</h2>
+          </div>
+          {editingId && (
+            <button className="ghost-button" type="button" onClick={resetForm}>
+              ✕ Hủy
+            </button>
+          )}
         </div>
-        <label>
-          Khóa học
-          <select name="courseId" value={form.courseId} onChange={handleChange}>
-            <option value="">Chưa chọn khóa học</option>
-            {courses.map((course) => (
-              <option key={course.id} value={course.id}>
-                {course.title}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="file-picker">
-          Tải video bài học
-          <input accept="video/*" type="file" onChange={handleVideoUpload} />
-          <span>
-            {uploadingVideo
-              ? 'Đang tải video lên...'
-              : selectedVideo
-                ? selectedVideo.name
-                : form.videoUrl
-                  ? 'Đã có video bài học'
-                  : 'Chưa chọn video'}
-          </span>
-        </label>
-        <label>
-          Tên bài học
-          <input name="title" value={form.title} onChange={handleChange} required />
-        </label>
-        <label>
-          Thời lượng phút
-          <input min="0" name="duration" type="number" value={form.duration} onChange={handleChange} />
-        </label>
-        <label>
-          Thứ tự
-          <input min="0" name="orderNumber" type="number" value={form.orderNumber} onChange={handleChange} />
-        </label>
-        <label className="full-field">
-          Mô tả
-          <textarea name="description" value={form.description} onChange={handleChange} rows="3" />
-        </label>
-        <button className="primary-button" type="submit" disabled={saving || uploadingVideo}>
-          {saving ? 'Đang lưu...' : editingId ? 'Cập nhật bài học' : 'Thêm bài học'}
-        </button>
-        {editingId && (
-          <button className="secondary-button" type="button" onClick={resetForm}>
-            Hủy
+
+        <div className="lesson-form-body">
+          <div className="lesson-form-section">
+            <p className="lesson-form-section-label">Thông tin chung</p>
+            <div className="lesson-form-row">
+              <label className="lesson-form-field span-2">
+                Tên bài học <span className="field-required">*</span>
+                <input name="title" value={form.title} onChange={handleChange} placeholder="Nhập tên bài học..." required />
+              </label>
+              <label className="lesson-form-field">
+                Khóa học
+                <select name="courseId" value={form.courseId} onChange={handleChange}>
+                  <option value="">Chưa chọn</option>
+                  {courses.map((course) => (
+                    <option key={course.id} value={course.id}>{course.title}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="lesson-form-row">
+              <label className="lesson-form-field">
+                Thời lượng (phút)
+                <input min="0" name="duration" type="number" value={form.duration} onChange={handleChange} placeholder="0" />
+              </label>
+              <label className="lesson-form-field">
+                Thứ tự bài
+                <input min="0" name="orderNumber" type="number" value={form.orderNumber} onChange={handleChange} placeholder="0" />
+              </label>
+              <label className="lesson-form-field span-1" />
+            </div>
+            <label className="lesson-form-field">
+              Mô tả
+              <textarea name="description" value={form.description} onChange={handleChange} rows="3" placeholder="Mô tả nội dung bài học..." />
+            </label>
+          </div>
+
+          <div className="lesson-form-section">
+            <p className="lesson-form-section-label">Nguồn video</p>
+            <div className="video-source-tabs">
+              <button
+                className={`video-source-tab${videoMode === 'youtube' ? ' active' : ''}`}
+                type="button"
+                onClick={() => setVideoMode('youtube')}
+              >
+                <span className="tab-icon">▶</span> YouTube
+              </button>
+              <button
+                className={`video-source-tab${videoMode === 'upload' ? ' active' : ''}`}
+                type="button"
+                onClick={() => setVideoMode('upload')}
+              >
+                <span className="tab-icon">↑</span> Tải file lên
+              </button>
+            </div>
+
+            {videoMode === 'youtube' ? (
+              <div className="youtube-input-wrap">
+                <span className="youtube-icon">▶</span>
+                <input
+                  className="youtube-url-input"
+                  name="videoUrl"
+                  type="url"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  value={form.videoUrl}
+                  onChange={handleChange}
+                />
+              </div>
+            ) : (
+              <label className="upload-drop-zone">
+                <input accept="video/*" type="file" onChange={handleVideoUpload} />
+                <span className="upload-drop-icon">↑</span>
+                <span className="upload-drop-text">
+                  {uploadingVideo
+                    ? 'Đang tải lên...'
+                    : selectedVideo
+                      ? selectedVideo.name
+                      : form.videoUrl
+                        ? 'Đã có video — nhấn để đổi'
+                        : 'Kéo thả hoặc nhấn để chọn file video'}
+                </span>
+                <span className="upload-drop-hint">MP4, MOV, AVI · tối đa 500 MB</span>
+              </label>
+            )}
+          </div>
+        </div>
+
+        <div className="lesson-form-footer">
+          <button className="primary-button" type="submit" disabled={saving || uploadingVideo}>
+            {saving ? 'Đang lưu...' : editingId ? 'Cập nhật bài học' : 'Thêm bài học'}
           </button>
-        )}
+          {editingId && (
+            <button className="secondary-button" type="button" onClick={resetForm}>
+              Hủy thay đổi
+            </button>
+          )}
+        </div>
       </form>
 
       <section className="admin-table-panel">
