@@ -6,20 +6,10 @@ import { getProgressByUserId } from '../api/progressApi.js'
 import { getStoredUser, normalizeList, toNumericId } from '../utils/flowHelpers.js'
 
 function formatDateTime(value) {
-  if (!value) {
-    return 'Chưa cập nhật'
-  }
-
+  if (!value) return '—'
   const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) {
-    return 'Chưa cập nhật'
-  }
-
-  return new Intl.DateTimeFormat('vi-VN', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  }).format(date)
+  if (Number.isNaN(date.getTime())) return '—'
+  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(date)
 }
 
 function isCompleted(progress) {
@@ -30,74 +20,83 @@ function clampPercent(value) {
   return Math.min(Math.max(value || 0, 0), 100)
 }
 
+function ProgressRing({ pct }) {
+  const r = 52, circ = 2 * Math.PI * r
+  const offset = circ - (clampPercent(pct) / 100) * circ
+  return (
+    <svg width="120" height="120" viewBox="0 0 120 120" className="cpd-ring">
+      <circle cx="60" cy="60" r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="9" />
+      <circle
+        cx="60" cy="60" r={r}
+        fill="none"
+        stroke="#38bdf8"
+        strokeWidth="9"
+        strokeLinecap="round"
+        strokeDasharray={circ}
+        strokeDashoffset={offset}
+        transform="rotate(-90 60 60)"
+        style={{ transition: 'stroke-dashoffset 1.2s ease' }}
+      />
+      <text x="60" y="56" textAnchor="middle" fill="#fff" fontSize="22" fontWeight="800" fontFamily="Inter,sans-serif">{Math.round(pct)}%</text>
+      <text x="60" y="73" textAnchor="middle" fill="rgba(255,255,255,0.55)" fontSize="11" fontFamily="Inter,sans-serif">Hoàn thành</text>
+    </svg>
+  )
+}
+
 function CourseProgressDetailPage() {
   const { courseId } = useParams()
   const numericCourseId = Number(courseId)
   const user = useMemo(() => getStoredUser(), [])
-  const [course, setCourse] = useState(null)
+  const [course, setCourse]           = useState(null)
   const [courseLessons, setCourseLessons] = useState([])
   const [progressItems, setProgressItems] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [loading, setLoading]         = useState(true)
+  const [error, setError]             = useState('')
 
   useEffect(() => {
     let isMounted = true
-
-    const loadProgressDetail = async () => {
-      if (!user?.id) {
-        setError('Vui lòng đăng nhập để xem tiến trình học.')
-        setLoading(false)
-        return
-      }
-
+    const load = async () => {
+      if (!user?.id) { setError('Vui lòng đăng nhập để xem tiến trình học.'); setLoading(false); return }
       try {
         const [coursesData, lessonsData, progressData] = await Promise.all([
           getCourses().catch(() => []),
           getLessons().catch(() => []),
           getProgressByUserId(user.id).catch(() => []),
         ])
-
         if (isMounted) {
-          const safeCourses = normalizeList(coursesData)
+          const safe = normalizeList(coursesData)
           const safeLessons = normalizeList(lessonsData)
-          const safeProgress = normalizeList(progressData)
-
-          setCourse(safeCourses.find((item) => Number(item.id) === numericCourseId) || null)
+          setCourse(safe.find((c) => Number(c.id) === numericCourseId) || null)
           setCourseLessons(
             safeLessons
-              .filter((lesson) => Number(lesson?.courseId) === numericCourseId)
-              .sort((first, second) => (first.orderNumber || 0) - (second.orderNumber || 0)),
+              .filter((l) => Number(l?.courseId) === numericCourseId)
+              .sort((a, b) => (a.orderNumber || 0) - (b.orderNumber || 0))
           )
-          setProgressItems(safeProgress)
+          setProgressItems(normalizeList(progressData))
           setError('')
         }
       } catch (err) {
-        if (isMounted) {
-          setError(err.response?.data?.message || 'Không thể tải chi tiết tiến trình học.')
-        }
+        if (isMounted) setError(err.response?.data?.message || 'Không thể tải chi tiết tiến trình học.')
       } finally {
-        if (isMounted) {
-          setLoading(false)
-        }
+        if (isMounted) setLoading(false)
       }
     }
-
-    loadProgressDetail()
-
-    return () => {
-      isMounted = false
-    }
+    load()
+    return () => { isMounted = false }
   }, [numericCourseId, user])
 
-  const progressByLessonId = new Map(progressItems.map((item) => [toNumericId(item.lessonId), item]))
-  const completedLessons = courseLessons.filter((lesson) => isCompleted(progressByLessonId.get(toNumericId(lesson.id))))
-  const totalLessons = courseLessons.length
-  const progressPercent = totalLessons === 0 ? 0 : (completedLessons.length / totalLessons) * 100
+  const progressByLessonId = new Map(progressItems.map((p) => [toNumericId(p.lessonId), p]))
+  const completedLessons   = courseLessons.filter((l) => isCompleted(progressByLessonId.get(toNumericId(l.id))))
+  const totalLessons       = courseLessons.length
+  const progressPercent    = totalLessons === 0 ? 0 : (completedLessons.length / totalLessons) * 100
 
   if (loading) {
     return (
       <section className="page-shell wide-shell">
-        <p className="state-message">Đang tải chi tiết tiến trình...</p>
+        <div className="ui-skeleton-page">
+          <div className="ui-skeleton ui-sk-hero" />
+          <div className="ui-skeleton ui-sk-list" />
+        </div>
       </section>
     )
   }
@@ -105,81 +104,81 @@ function CourseProgressDetailPage() {
   if (!user?.id) {
     return (
       <section className="page-shell">
-        <div className="panel home-panel">
-          <p className="alert">{error}</p>
-          <Link className="primary-button" to="/login">
-            Đăng nhập
-          </Link>
+        <div className="ui-empty-state">
+          <div className="ui-empty-icon">🔒</div>
+          <h3>Cần đăng nhập</h3>
+          <p>{error}</p>
+          <Link className="primary-button" to="/login">Đăng nhập</Link>
         </div>
       </section>
     )
   }
 
   return (
-    <section className="page-shell wide-shell dashboard-page">
-      <Link className="text-link" to="/dashboard">
-        Quay lại bảng điều khiển
-      </Link>
+    <section className="page-shell wide-shell cpd-page">
+      <Link className="text-link" to="/dashboard">← Bảng điều khiển</Link>
 
       {error && <p className="alert">{error}</p>}
 
-      <article className="dashboard-panel course-progress-detail-hero">
-        <div>
+      {/* Hero */}
+      <div className="cpd-hero">
+        <div className="cpd-hero-left">
           <p className="eyebrow">Tiến trình khóa học</p>
           <h1>{course?.title || `Khóa học #${numericCourseId}`}</h1>
-          <p className="muted">
-            {completedLessons.length} / {totalLessons} bài đã hoàn thành
+          <p className="cpd-hero-sub">
+            <span className="cpd-done">{completedLessons.length}</span>
+            <span> / {totalLessons} bài đã hoàn thành</span>
           </p>
+          <div className="cpd-hero-bar-wrap">
+            <div className="cpd-hero-bar" style={{ width: `${clampPercent(progressPercent)}%` }} />
+          </div>
         </div>
-        <strong>{progressPercent.toFixed(0)}%</strong>
-        <div className="course-progress-bar" aria-label="Tiến độ khóa học">
-          <span style={{ width: `${clampPercent(progressPercent)}%` }} />
-        </div>
-      </article>
+        <ProgressRing pct={progressPercent} />
+      </div>
 
-      <section className="dashboard-panel">
-        <div>
+      {/* Lesson list */}
+      <div className="cpd-lesson-panel">
+        <div className="cpd-panel-head">
           <h2>Danh sách bài học</h2>
-          <p className="muted">Theo dõi trạng thái hoàn thành từng bài học trong khóa học.</p>
+          <p>Theo dõi trạng thái hoàn thành từng bài học.</p>
         </div>
 
         {courseLessons.length === 0 ? (
-          <p className="state-message">Chưa có bài học trong khóa học này.</p>
+          <div className="ui-empty-state">
+            <div className="ui-empty-icon">📚</div>
+            <h3>Chưa có bài học</h3>
+            <p>Khóa học này chưa có bài học nào.</p>
+          </div>
         ) : (
-          <div className="lesson-progress-grid">
-            {courseLessons.map((lesson) => {
-              const lessonProgress = progressByLessonId.get(lesson.id)
-              const completed = isCompleted(lessonProgress)
-
+          <div className="cpd-lesson-list">
+            {courseLessons.map((lesson, i) => {
+              const prog = progressByLessonId.get(toNumericId(lesson.id))
+              const done = isCompleted(prog)
               return (
-                <article className="lesson-progress-card" key={lesson.id}>
-                  <div className="lesson-progress-card-header">
-                    <div>
-                      <p className="eyebrow">Bài {lesson.orderNumber || '-'}</p>
+                <div className={`cpd-lesson-row ${done ? 'is-done' : ''}`} key={lesson.id}>
+                  <div className="cpd-lesson-num">{lesson.orderNumber || i + 1}</div>
+                  <div className="cpd-lesson-body">
+                    <div className="cpd-lesson-title-row">
                       <h3>{lesson.title || `Bài học #${lesson.id}`}</h3>
+                      <span className={`cpd-lesson-badge ${done ? 'done' : 'pending'}`}>
+                        {done ? '✓ Hoàn thành' : '○ Chưa học'}
+                      </span>
                     </div>
-                    <span className={`lesson-progress-badge ${completed ? 'is-completed' : 'is-pending'}`}>
-                      {completed ? 'Đã hoàn thành' : 'Chưa hoàn thành'}
-                    </span>
+                    {lesson.description && <p className="cpd-lesson-desc">{lesson.description}</p>}
+                    <div className="cpd-lesson-meta">
+                      {lesson.duration && <span>⏱ {lesson.duration} phút</span>}
+                      {done && prog?.completedAt && <span>✓ {formatDateTime(prog.completedAt)}</span>}
+                    </div>
                   </div>
-
-                  <p>{lesson.description || 'Chưa có mô tả cho bài học này.'}</p>
-
-                  <div className="lesson-progress-meta">
-                    <span>Thời lượng: {lesson.duration ? `${lesson.duration} phút` : '-'}</span>
-                    <span>Thứ tự: {lesson.orderNumber || '-'}</span>
-                    <span>Ngày hoàn thành: {completed ? formatDateTime(lessonProgress?.completedAt) : '-'}</span>
-                  </div>
-
                   <Link className="secondary-button" to={`/lessons/${lesson.id}`}>
-                    Xem bài học
+                    {done ? 'Xem lại' : 'Học ngay'}
                   </Link>
-                </article>
+                </div>
               )
             })}
           </div>
         )}
-      </section>
+      </div>
     </section>
   )
 }

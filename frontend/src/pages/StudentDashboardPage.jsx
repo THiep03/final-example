@@ -273,27 +273,27 @@ function StudentDashboardPage() {
         <>
           <div className="dashboard-grid dashboard-overview-grid">
             <article className="dashboard-card dashboard-stat-card stat-blue">
-              <div className="stat-icon">Q</div>
+              <div className="stat-icon">🎯</div>
               <span>Điểm quiz trung bình</span>
               <strong>{averageScore.toFixed(1)}%</strong>
             </article>
             <article className="dashboard-card dashboard-stat-card stat-teal">
-              <div className="stat-icon">F</div>
+              <div className="stat-icon">🧠</div>
               <span>Điểm tập trung trung bình</span>
               <strong>{averageFocus.toFixed(1)}%</strong>
             </article>
             <article className="dashboard-card dashboard-stat-card stat-indigo">
-              <div className="stat-icon">C</div>
+              <div className="stat-icon">📚</div>
               <span>Số khóa học đang học</span>
               <strong>{totalActiveCourses}</strong>
             </article>
             <article className="dashboard-card dashboard-stat-card stat-green">
-              <div className="stat-icon">L</div>
+              <div className="stat-icon">✅</div>
               <span>Bài học đã hoàn thành</span>
               <strong>{completedLessons || fallbackCompletedLessons}</strong>
             </article>
             <article className="dashboard-card dashboard-stat-card stat-orange">
-              <div className="stat-icon">A</div>
+              <div className="stat-icon">📝</div>
               <span>Lượt làm quiz</span>
               <strong>{quizAttempts.length}</strong>
             </article>

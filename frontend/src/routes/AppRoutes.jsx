@@ -26,6 +26,12 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* auth pages — no navbar */}
+        <Route element={<PublicOnlyRoute />}>
+          <Route path={ROUTES.LOGIN} element={<Login />} />
+          <Route path={ROUTES.REGISTER} element={<Register />} />
+        </Route>
+
         <Route element={<AppLayout />}>
           <Route element={<ProtectedRoute />}>
             <Route path={ROUTES.HOME} element={<Home />} />
@@ -48,11 +54,6 @@ function AppRoutes() {
             <Route path={ROUTES.ADMIN_QUESTIONS} element={<AdminQuestionsPage />} />
             <Route path={ROUTES.ADMIN_FILES} element={<AdminFilesPage />} />
             <Route path={ROUTES.ADMIN_USERS} element={<AdminUsersPage />} />
-          </Route>
-
-          <Route element={<PublicOnlyRoute />}>
-            <Route path={ROUTES.LOGIN} element={<Login />} />
-            <Route path={ROUTES.REGISTER} element={<Register />} />
           </Route>
         </Route>
       </Routes>
