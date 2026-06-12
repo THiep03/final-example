@@ -85,6 +85,12 @@ final-example/
 | password | String | BCrypt hash |
 | role | String | "student" / "admin" |
 | currentLevel | String | "basic" / "medium" / "hard" |
+| phone | String (20) | Số điện thoại (nullable) |
+| dateOfBirth | Date | Ngày sinh (nullable) |
+| gender | String (10) | "male" / "female" / "other" (nullable) |
+| school | String (255) | Trường học / đơn vị (nullable) |
+| bio | TEXT | Giới thiệu bản thân (nullable) |
+| avatarUrl | String (500) | URL ảnh đại diện — lưu qua FileStorageService |
 | createdAt / updatedAt | LocalDateTime | |
 
 ### courses
@@ -273,6 +279,15 @@ POST /api/feedbacks/generate                        Tạo feedback
 GET  /api/feedbacks/user/{userId}                   Feedback của user
 ```
 
+### Users (hồ sơ & mật khẩu)
+```
+GET    /api/users/{id}               Lấy thông tin người dùng
+PUT    /api/users/{id}               Cập nhật hồ sơ (name, phone, dateOfBirth, gender, school, bio)
+POST   /api/users/{id}/avatar        Upload ảnh đại diện (multipart/form-data, field: file)
+POST   /api/users/{id}/change-password  Đổi mật khẩu (oldPassword, newPassword)
+GET    /api/users                    Danh sách tất cả users (admin)
+```
+
 ### Admin
 ```
 GET /api/admin/dashboard/summary                    Thống kê tổng quan
@@ -297,10 +312,12 @@ Student (đã đăng nhập):
   /lessons/:id    Xem bài học + camera
   /quiz/:lessonId Làm quiz thích ứng
   /dashboard      Dashboard cá nhân
-  /profile        Hồ sơ
+  /profile        Hồ sơ + chỉnh sửa + upload avatar
+  /change-password  Đổi mật khẩu
 
 Admin:
   /admin/dashboard              Thống kê hệ thống
+  /admin/users                  Quản lý người dùng (xem, sửa, upload avatar)
   /admin/courses                Quản lý khóa học
   /admin/courses/:id/content    Nội dung khóa học
   /admin/lessons                Quản lý bài học
@@ -310,6 +327,31 @@ Admin:
 ```
 
 ### Trang quan trọng
+
+**ProfilePage.jsx** — Hồ sơ người dùng
+- Hiển thị + chỉnh sửa 6 trường: name, phone, dateOfBirth, gender, school, bio
+- Avatar: click vào vòng tròn → chọn ảnh → upload ngay `POST /api/users/{id}/avatar`
+- Preview ảnh tức thì; nếu chưa có avatar hiển thị chữ cái đầu của tên
+- Sau khi upload → gọi `syncUserToStorage({ avatarUrl })` → dispatch custom event `userUpdated`
+- Navbar lắng nghe sự kiện `userUpdated` và re-render avatar
+
+**ChangePasswordPage.jsx** — Đổi mật khẩu
+- Layout giống Login (auth-scene, cinematic dark)
+- 3 trường: mật khẩu cũ, mật khẩu mới, xác nhận
+- Thanh strength bar cho mật khẩu mới
+- Validate confirm client-side trước khi gọi API
+- Thành công → tự động redirect về /profile sau 2 giây
+
+**Navbar.jsx** — Đồng bộ avatar
+- `const [user, setUser] = useState(getStoredUser)` — state thay vì const
+- `useEffect` lắng nghe `window.addEventListener('userUpdated', refresh)`
+- Hiển thị `<img>` nếu có avatarUrl, hoặc chữ cái đầu (initials)
+
+**AdminUsersPage.jsx** — Quản lý người dùng (Admin)
+- Bảng danh sách: cột avatar (ảnh hoặc initials), tên, email + phone, school, role
+- Click "Sửa" → form 9 trường (name, email, phone, dateOfBirth, gender, role, school, currentLevel, bio)
+- Khu vực avatar: preview 88px + nút chọn file + tên file
+- Submit: upload avatar trước (nếu chọn file mới) → gọi `updateUser()`
 
 **LessonDetailPage.jsx** — Phức tạp nhất
 - Phát video bài học
@@ -342,6 +384,14 @@ const userId = localStorage.getItem('userId')
 // Đăng xuất
 localStorage.removeItem('user')
 localStorage.removeItem('userId')
+
+// Cập nhật localStorage + đồng bộ Navbar (syncUserToStorage)
+function syncUserToStorage(updatedFields) {
+  const current = JSON.parse(localStorage.getItem('user') || '{}')
+  const merged = { ...current, ...updatedFields }
+  localStorage.setItem('user', JSON.stringify(merged))
+  window.dispatchEvent(new CustomEvent('userUpdated'))
+}
 ```
 
 ---
@@ -410,6 +460,41 @@ quizScore    = điểm quiz vừa làm
 recommendation = dựa trên tổ hợp hai điểm trên
 ```
 
+### 8.5 Hồ sơ người dùng mở rộng
+
+Bảng `users` có thêm 6 trường mở rộng ngoài thông tin đăng nhập cơ bản:
+
+```
+phone, dateOfBirth, gender, school, bio, avatarUrl
+```
+
+Tất cả là nullable — người dùng điền dần, không bắt buộc khi đăng ký.
+
+API cập nhật hồ sơ: `PUT /api/users/{id}` nhận `UserUpdateRequest` (DTO với 6 trường trên).
+
+### 8.6 Upload ảnh đại diện (Avatar)
+
+**Endpoint:** `POST /api/users/{id}/avatar` — `multipart/form-data`, field tên `file`
+
+**Backend:**
+```java
+// AuthService.updateAvatar()
+String url = fileStorageService.uploadFile(file, "image")  // reuse FileStorageService
+user.setAvatarUrl(url)
+userRepository.save(user)
+```
+
+**Frontend — cross-component sync:**
+```
+ProfilePage upload avatar
+  → uploadUserAvatar(userId, file)         [API call]
+  → syncUserToStorage({ avatarUrl })       [patch localStorage]
+  → dispatch CustomEvent('userUpdated')    [broadcast]
+  ← Navbar nhận event → setUser(getStoredUser()) [re-render avatar]
+```
+
+Lý do dùng custom event thay localStorage event: `storage` event chỉ fire ở tab khác, không fire trong cùng tab.
+
 ---
 
 ## 9. Luồng hoạt động từ đầu đến cuối
@@ -463,6 +548,37 @@ recommendation = dựa trên tổ hợp hai điểm trên
 ---
 
 ## 10. Cấu hình & Chạy dự án
+
+### Database — Dùng scripts/ (khuyến nghị)
+
+```
+scripts/
+├── 01_schema.sql         Tạo database + toàn bộ bảng (chạy đầu tiên)
+├── 02_migrations.sql     ALTER TABLE cho DB đã tồn tại trước (bỏ qua nếu tạo mới)
+├── 03_seed_sample.sql    Dữ liệu mẫu cơ bản (3 user, 2 khóa học)
+├── 04_seed_it_courses.sql  6 khóa IT, 36 bài học, 360 câu hỏi
+├── 05_seed_videos.sql    36 video YouTube cho 36 bài học
+├── run_all.bat           Chạy toàn bộ (Windows)
+└── run_all.sh            Chạy toàn bộ (Linux/Mac)
+```
+
+```bash
+# Windows — chạy một lệnh
+scripts\run_all.bat localhost root matkhau
+
+# Linux/Mac
+chmod +x scripts/run_all.sh
+./scripts/run_all.sh localhost root matkhau
+
+# Hoặc thủ công từng file
+mysql -u root -p adaptive_learning_db < scripts/01_schema.sql
+mysql -u root -p adaptive_learning_db < scripts/03_seed_sample.sql
+```
+
+**Nếu DB đã tồn tại** (upgrade thêm cột mới):
+```bash
+mysql -u root -p < scripts/02_migrations.sql
+```
 
 ### Backend
 ```bash
@@ -530,3 +646,9 @@ Stop-Process -Id <PID> -Force
 | File upload tối đa? | 500MB |
 | Port frontend? | 5173 (cố định) |
 | Port backend? | 8080 |
+| Avatar upload endpoint? | POST /api/users/{id}/avatar (multipart/form-data) |
+| Đổi mật khẩu endpoint? | POST /api/users/{id}/change-password |
+| Navbar re-render avatar thế nào? | Lắng nghe custom event `userUpdated` dispatch từ ProfilePage |
+| Bảng users có những trường profile nào? | phone, dateOfBirth, gender, school, bio, avatarUrl |
+| Chạy DB nhanh? | scripts\run_all.bat (Windows) / run_all.sh (Linux/Mac) |
+| DB có mấy bảng? | 11 bảng (users, courses, lessons, questions, quiz_attempts, quiz_answers, focus_logs, feedbacks, learning_progress, lesson_interactions, file_storage) |

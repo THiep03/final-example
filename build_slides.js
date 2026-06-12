@@ -222,7 +222,7 @@ async function build() {
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 6.75, y: 2.1, w: 5.95, h: 4.4, fill: { color: DARK }, line: { type: "none" }, rectRadius: 0.12, shadow: sh() });
   iconBadge(s, "FaUserShield", 7.1, 2.45, 0.85, ACCENT, "white");
   s.addText("Quản trị viên (Admin)", { x: 8.15, y: 2.45, w: 4.3, h: 0.85, fontFace: HEAD, fontSize: 19, bold: true, color: WHITE, margin: 0, valign: "middle" });
-  s.addText(["Quản lý khóa học (CRUD)", "Quản lý bài giảng & upload video", "Quản lý câu hỏi theo độ khó", "Dashboard thống kê toàn hệ thống", "Theo dõi focus score & kết quả quiz"].map(t => ({ text: t, options: { bullet: { code: "2713" }, color: "E2E8F0", breakLine: true, paraSpaceAfter: 11 } })), { x: 7.15, y: 3.55, w: 5.3, h: 2.8, fontFace: BODY, fontSize: 14.5, margin: 0 });
+  s.addText(["Quản lý người dùng & upload avatar", "Quản lý khóa học (CRUD)", "Quản lý bài giảng & upload video", "Quản lý câu hỏi theo độ khó", "Dashboard thống kê toàn hệ thống"].map(t => ({ text: t, options: { bullet: { code: "2713" }, color: "E2E8F0", breakLine: true, paraSpaceAfter: 11 } })), { x: 7.15, y: 3.55, w: 5.3, h: 2.8, fontFace: BODY, fontSize: 14.5, margin: 0 });
   s.addNotes("Hệ thống có 2 actor: người học và quản trị viên. Phân quyền bằng route guard ở frontend dựa trên vai trò lưu trong phiên đăng nhập.");
 
   // ===== 8. CÔNG NGHỆ =====
@@ -303,7 +303,7 @@ async function build() {
   n = 12; s = lightHead("Dữ liệu", "Cơ sở dữ liệu — 11 bảng chính", n);
   const rows = [
     ["Bảng", "Vai trò chính"],
-    ["users", "Người dùng, vai trò, current_level"],
+    ["users", "Người dùng, vai trò, hồ sơ cá nhân, avatar"],
     ["courses / lessons", "Khóa học và bài giảng (kèm video)"],
     ["questions", "Câu hỏi quiz phân theo độ khó"],
     ["quiz_attempts / quiz_answers", "Lượt làm bài và từng câu trả lời"],
@@ -351,7 +351,7 @@ async function build() {
   // ===== 14. CHỨC NĂNG NGƯỜI HỌC chi tiết =====
   n = 14; s = lightHead("Chức năng · Người học", "Trải nghiệm của người học", n);
   rowList(s, [
-    { k: "FaSignInAlt", t: "Tài khoản", d: "Đăng ký, đăng nhập, quản lý hồ sơ cá nhân" },
+    { k: "FaSignInAlt", t: "Tài khoản & hồ sơ", d: "Đăng ký, đăng nhập, cập nhật thông tin cá nhân, đổi mật khẩu, upload avatar" },
     { k: "FaVideo", t: "Học bài giảng", d: "Xem video, ghi chú, theo dõi tiến trình hoàn thành" },
     { k: "FaCamera", t: "Giám sát tập trung", d: "Bật webcam, AI cảnh báo khi mất tập trung / buồn ngủ" },
     { k: "FaBolt", t: "Quiz thích ứng", d: "Làm bài, độ khó tự điều chỉnh theo năng lực" },
@@ -361,21 +361,14 @@ async function build() {
 
   // ===== 15. CHỨC NĂNG ADMIN chi tiết =====
   n = 15; s = lightHead("Chức năng · Quản trị", "Công cụ cho quản trị viên", n);
-  const adm = [
+  rowList(s, [
+    { k: "FaUsers", t: "Quản lý người dùng", d: "Xem, sửa thông tin cá nhân, upload avatar cho học viên" },
     { k: "FaLayerGroup", t: "Quản lý khóa học", d: "Tạo, sửa, xóa và xuất bản khóa học" },
     { k: "FaUpload", t: "Quản lý bài giảng", d: "Thêm bài học, upload video, sắp xếp thứ tự" },
     { k: "FaQuestionCircle", t: "Quản lý câu hỏi", d: "Soạn câu hỏi, phân loại theo độ khó" },
     { k: "FaTachometerAlt", t: "Dashboard thống kê", d: "Số học viên, điểm quiz, focus score, lượt xem" },
-  ];
-  adm.forEach((a, i) => {
-    const col = i % 2, row = Math.floor(i / 2);
-    const x = 0.6 + col * 6.15, y = 2.15 + row * 2.15;
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w: 5.9, h: 1.9, fill: { color: i % 2 ? CARD : CARD2 }, line: { type: "none" }, rectRadius: 0.12, shadow: sh() });
-    iconBadge(s, a.k, x + 0.35, y + 0.35, 0.8, TEAL, "white");
-    s.addText(a.t, { x: x + 1.45, y: y + 0.4, w: 4.2, h: 0.6, fontFace: HEAD, fontSize: 17, bold: true, color: INK, margin: 0, valign: "middle" });
-    s.addText(a.d, { x: x + 1.45, y: y + 1.0, w: 4.2, h: 0.75, fontFace: BODY, fontSize: 13, color: MUTED, margin: 0, lineSpacing: 17 });
-  });
-  s.addNotes("Quản trị viên có 4 nhóm công cụ: quản lý khóa học (kể cả xuất bản), quản lý bài giảng và upload video, quản lý ngân hàng câu hỏi theo độ khó, và dashboard thống kê toàn hệ thống.");
+  ], 0.6, 2.05, 12.1, { rh: 0.95 });
+  s.addNotes("Quản trị viên có 5 nhóm công cụ: quản lý người dùng (kể cả upload avatar), quản lý khóa học (kể cả xuất bản), quản lý bài giảng và upload video, quản lý ngân hàng câu hỏi theo độ khó, và dashboard thống kê toàn hệ thống.");
 
   // ===== 16. TÍNH NĂNG 1: AI FOCUS =====
   n = 16; s = lightHead("Tính năng nổi bật 01", "AI giám sát tập trung qua webcam", n);
@@ -579,7 +572,7 @@ async function build() {
   n = 25; s = lightHead("Kết quả", "Kết quả đạt được", n);
   const stats = [
     { num: "11", l: "bảng dữ liệu được\nthiết kế & triển khai", c: TEAL },
-    { num: "10", l: "module chức năng\nhoàn thiện", c: MINT },
+    { num: "12", l: "module chức năng\nhoàn thiện", c: MINT },
     { num: "4", l: "trạng thái tập trung\nnhận diện bằng AI", c: ACCENT },
     { num: "3", l: "mức độ khó quiz\nthích ứng tự động", c: DARK },
   ];
