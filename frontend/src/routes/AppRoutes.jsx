@@ -7,6 +7,7 @@ import AdminFilesPage from '../pages/AdminFilesPage.jsx'
 import AdminLessonQuestionsPage from '../pages/AdminLessonQuestionsPage.jsx'
 import AdminLessonsPage from '../pages/AdminLessonsPage.jsx'
 import AdminQuestionsPage from '../pages/AdminQuestionsPage.jsx'
+import AdminUsersPage from '../pages/AdminUsersPage.jsx'
 import AppLayout from '../components/AppLayout.jsx'
 import CourseDetailPage from '../pages/CourseDetailPage.jsx'
 import CourseProgressDetailPage from '../pages/CourseProgressDetailPage.jsx'
@@ -46,6 +47,7 @@ function AppRoutes() {
             <Route path="/admin/lessons/:lessonId/questions" element={<AdminLessonQuestionsPage />} />
             <Route path={ROUTES.ADMIN_QUESTIONS} element={<AdminQuestionsPage />} />
             <Route path={ROUTES.ADMIN_FILES} element={<AdminFilesPage />} />
+            <Route path={ROUTES.ADMIN_USERS} element={<AdminUsersPage />} />
           </Route>
 
           <Route element={<PublicOnlyRoute />}>
