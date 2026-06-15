@@ -140,6 +140,7 @@ function LessonDetailPage() {
   const [cameraStarting, setCameraStarting] = useState(false)
   const [cameraError, setCameraError] = useState('')
   const [modelsReady, setModelsReady] = useState(false)
+  const [modelsLoadError, setModelsLoadError] = useState(false)
 
   const [focusStatus, setFocusStatus] = useState('idle')
   const [focusScore, setFocusScore] = useState(null)
@@ -170,7 +171,9 @@ function LessonDetailPage() {
   }, [stopDetection])
 
   useEffect(() => {
-    loadModelsOnce().then(() => setModelsReady(true)).catch(() => {})
+    loadModelsOnce()
+      .then(() => setModelsReady(true))
+      .catch(() => setModelsLoadError(true))
   }, [])
 
   useEffect(() => {
@@ -342,19 +345,41 @@ function LessonDetailPage() {
 
   const startCamera = useCallback(async () => {
     setCameraError('')
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setCameraError('Trình duyệt của bạn chưa hỗ trợ mở camera.')
+
+    if (!window.isSecureContext) {
+      setCameraError('Camera yêu cầu kết nối bảo mật (HTTPS). Vui lòng chạy trên localhost hoặc HTTPS.')
       return
     }
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError('Trình duyệt không hỗ trợ camera. Vui lòng dùng Chrome, Firefox hoặc Edge phiên bản mới.')
+      return
+    }
+
     setCameraStarting(true)
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+        audio: false,
+      })
       webcamStreamRef.current = stream
-      if (webcamVideoRef.current) webcamVideoRef.current.srcObject = stream
+      if (webcamVideoRef.current) {
+        webcamVideoRef.current.srcObject = stream
+        await webcamVideoRef.current.play().catch(() => {})
+      }
       setCameraEnabled(true)
       if (modelsReady && id) startDetection(id)
-    } catch {
-      setCameraError('Không thể mở camera. Vui lòng cấp quyền camera cho trình duyệt và thử lại.')
+    } catch (err) {
+      const name = err?.name || ''
+      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+        setCameraError('Bị từ chối quyền camera. Nhấn vào biểu tượng khóa/camera trên thanh địa chỉ trình duyệt để cấp quyền rồi thử lại.')
+      } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        setCameraError('Không tìm thấy camera trên thiết bị. Vui lòng kết nối camera và thử lại.')
+      } else if (name === 'NotReadableError' || name === 'TrackStartError') {
+        setCameraError('Camera đang được ứng dụng khác sử dụng. Vui lòng đóng ứng dụng đó và thử lại.')
+      } else {
+        setCameraError('Không thể mở camera. Vui lòng cấp quyền camera cho trình duyệt và thử lại.')
+      }
       setCameraEnabled(false)
     } finally {
       setCameraStarting(false)
@@ -534,6 +559,7 @@ function LessonDetailPage() {
                 muted
                 playsInline
                 onClick={(event) => event.preventDefault()}
+                onLoadedMetadata={() => webcamVideoRef.current?.play().catch(() => {})}
               />
               {!cameraEnabled && (
                 <div className="webcam-placeholder">
@@ -544,18 +570,21 @@ function LessonDetailPage() {
             </div>
 
             {cameraError && <p className="alert compact-alert">{cameraError}</p>}
-            {!modelsReady && !cameraError && (
+            {!modelsReady && !modelsLoadError && !cameraError && (
               <p className="muted compact-alert">Đang tải mô hình AI nhận diện khuôn mặt...</p>
+            )}
+            {modelsLoadError && (
+              <p className="muted compact-alert">Không tải được mô hình AI — camera vẫn hoạt động nhưng không theo dõi tập trung được.</p>
             )}
 
             <div className="webcam-actions">
               <button
                 className="secondary-button"
                 type="button"
-                disabled={cameraStarting || cameraEnabled || !modelsReady}
+                disabled={cameraStarting || cameraEnabled}
                 onClick={startCamera}
               >
-                {cameraStarting ? 'Đang mở camera...' : !modelsReady ? 'Đang tải AI...' : 'Bật camera'}
+                {cameraStarting ? 'Đang mở camera...' : 'Bật camera'}
               </button>
               <button className="secondary-button" type="button" disabled={!cameraEnabled} onClick={stopCamera}>
                 Tắt camera
