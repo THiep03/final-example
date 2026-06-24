@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -54,7 +55,8 @@ public class FeedbackService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz attempt not found"));
 
         Float quizScore = quizAttempt.getScore() == null ? 0.0F : quizAttempt.getScore();
-        Float focusScore = calculateAverageFocusScore(user.getId(), lesson.getId());
+        LocalDateTime sessionStart = quizAttempt.getStartedAt() != null ? quizAttempt.getStartedAt() : LocalDateTime.now().minusMinutes(60);
+        Float focusScore = calculateAverageFocusScore(user.getId(), lesson.getId(), sessionStart);
         String recommendation = buildRecommendation(quizScore, focusScore);
 
         Feedback feedback = new Feedback();
@@ -108,15 +110,15 @@ public class FeedbackService {
                 .toList();
     }
 
-    private Float calculateAverageFocusScore(Long userId, Long lessonId) {
-        List<FocusLog> focusLogs = focusLogRepository.findByUserIdAndLessonId(userId, lessonId);
+    private Float calculateAverageFocusScore(Long userId, Long lessonId, LocalDateTime since) {
+        List<FocusLog> focusLogs = focusLogRepository.findByUserIdAndLessonIdAndRecordedAtAfter(userId, lessonId, since);
         double average = focusLogs.stream()
                 .map(FocusLog::getFocusScore)
                 .filter(score -> score != null)
                 .mapToDouble(Float::doubleValue)
                 .average()
                 .orElse(0.0);
-        return (float) average;
+        return (float) Math.round(average);
     }
 
     private String buildRecommendation(Float quizScore, Float focusScore) {
@@ -130,22 +132,30 @@ public class FeedbackService {
     }
 
     private String buildMessage(String recommendation, Float quizScore, Float focusScore) {
+        boolean quizLow = quizScore < AppConstants.QuizResult.PASS_SCORE;
+        boolean focusLow = focusScore < AppConstants.QuizResult.PASS_SCORE;
+
         if (AppConstants.Recommendation.NEXT_LESSON.equals(recommendation)) {
             return String.format(
-                    "Bạn đã hoàn thành tốt bài học với điểm quiz %.1f và mức độ tập trung trung bình %.1f. Hãy chuyển sang bài học tiếp theo.",
-                    quizScore,
-                    focusScore
+                    "Bạn đã hoàn thành tốt bài học với điểm quiz %.0f%% và mức độ tập trung %.0f%%. Hãy chuyển sang bài học tiếp theo.",
+                    quizScore, focusScore
             );
         }
         if (AppConstants.Recommendation.REVIEW_LESSON.equals(recommendation)) {
+            if (focusLow && focusScore > 0) {
+                return String.format(
+                        "Điểm quiz của bạn là %.0f%% (chưa đạt) và mức độ tập trung %.0f%% còn thấp. Hãy học lại bài, duy trì sự tập trung và làm lại quiz.",
+                        quizScore, focusScore
+                );
+            }
             return String.format(
-                    "Điểm quiz của bạn là %.1f, chưa đạt mức yêu cầu. Bạn nên học lại bài này và làm lại quiz để nắm chắc kiến thức hơn.",
+                    "Điểm quiz của bạn là %.0f%%, chưa đạt mức yêu cầu. Bạn nên học lại bài này và làm lại quiz để nắm chắc kiến thức hơn.",
                     quizScore
             );
         }
         return String.format(
-                "Mức độ tập trung trung bình của bạn là %.1f, còn thấp so với mục tiêu. Bạn nên luyện tập thêm và giữ môi trường học ít xao nhãng hơn.",
-                focusScore
+                "Điểm quiz %.0f%% đạt yêu cầu nhưng mức độ tập trung %.0f%% còn thấp. Hãy luyện tập thêm và giữ môi trường học ít xao nhãng hơn.",
+                quizScore, focusScore
         );
     }
 }

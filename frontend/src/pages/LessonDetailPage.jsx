@@ -541,7 +541,7 @@ function LessonDetailPage() {
               <p className="alert compact-alert" role="alert">{focusAlert}</p>
             )}
 
-            {cameraEnabled && focusScore !== null && (
+            {focusScore !== null && (
               <div className="focus-score-display">
                 <span>Điểm tập trung phiên vừa rồi:</span>
                 <strong className={focusScore >= FOCUS_SCORE.GOOD ? 'score-good' : focusScore >= FOCUS_SCORE.MID ? 'score-mid' : 'score-low'}>

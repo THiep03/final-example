@@ -1,6 +1,7 @@
 import axiosClient from './axiosClient'
 
 const startRequests = new Map()
+const startAdaptiveRequests = new Map()
 
 export const startQuiz = async ({ userId, lessonId }) => {
   const key = `${userId}:${lessonId}`
@@ -27,12 +28,22 @@ export const submitQuiz = async ({ attemptId, answers }) => {
 }
 
 export const startAdaptiveQuiz = async ({ userId, lessonId, totalQuestions = 10 }) => {
-  const response = await axiosClient.post('/quiz/adaptive/start', {
-    userId,
-    lessonId,
-    totalQuestions,
-  })
-  return response.data
+  const key = `${userId}:${lessonId}`
+
+  if (!startAdaptiveRequests.has(key)) {
+    const request = axiosClient
+      .post('/quiz/adaptive/start', { userId, lessonId, totalQuestions })
+      .then((response) => response.data)
+      .finally(() => {
+        window.setTimeout(() => {
+          startAdaptiveRequests.delete(key)
+        }, 1000)
+      })
+
+    startAdaptiveRequests.set(key, request)
+  }
+
+  return startAdaptiveRequests.get(key)
 }
 
 export const answerAdaptiveQuestion = async ({

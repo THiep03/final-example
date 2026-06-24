@@ -233,6 +233,87 @@ class QuizServiceTest {
     }
 
     @Test
+    void midQuizResponseIncludesCorrectAnswerCount() {
+        AdaptiveAnswerResponse response = answerWith(
+                attempt(3),
+                question(1L, "basic", "A"),
+                List.of(question(1L, "basic", "A"), question(2L, "medium", "A"), question(3L, "medium", "A")),
+                "A",
+                "basic",
+                10
+        );
+
+        assertThat(response.getFinished()).isFalse();
+        assertThat(response.getCorrectAnswers()).isEqualTo(1);
+    }
+
+    @Test
+    void wrongAnswerNotCountedAsCorrectInMidQuiz() {
+        AdaptiveAnswerResponse response = answerWith(
+                attempt(3),
+                question(1L, "basic", "A"),
+                List.of(question(1L, "basic", "A"), question(2L, "basic", "A"), question(3L, "medium", "A")),
+                "B",
+                "basic",
+                10
+        );
+
+        assertThat(response.getFinished()).isFalse();
+        assertThat(response.getCorrectAnswers()).isEqualTo(0);
+    }
+
+    @Test
+    void finishResponseCountsPartialCorrectAnswers() {
+        QuizAttempt attempt = attempt(3);
+        Question q1 = question(1L, "basic", "A");
+        Question q2 = question(2L, "basic", "A");
+        Question q3 = question(3L, "basic", "A");
+
+        // q1 correct, q2 wrong already answered
+        QuizAnswer a1 = answer(attempt, q1, true);
+        QuizAnswer a2 = answer(attempt, q2, false);
+
+        when(quizAttemptRepository.findById(10L)).thenReturn(Optional.of(attempt));
+        when(questionRepository.findById(3L)).thenReturn(Optional.of(q3));
+        when(quizAnswerRepository.findByQuizAttemptId(10L)).thenReturn(List.of(a1, a2));
+        when(quizAnswerRepository.save(any(QuizAnswer.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(quizAttemptRepository.save(any(QuizAttempt.class))).thenAnswer(inv -> inv.getArgument(0));
+        lenient().when(questionRepository.findByLessonId(1L)).thenReturn(List.of(q1, q2, q3));
+
+        // q3 answered correctly → quiz finishes (3/3 answered), 2 correct total
+        AdaptiveAnswerResponse response = quizService.answerAdaptiveQuestion(
+                answerRequest(3L, "A", "basic", 10));
+
+        assertThat(response.getFinished()).isTrue();
+        assertThat(response.getCorrectAnswers()).isEqualTo(2);
+        assertThat(response.getAnsweredCount()).isEqualTo(3);
+    }
+
+    @Test
+    void finishResponseCorrectAnswersEqualsZeroWhenAllWrong() {
+        QuizAttempt attempt = attempt(2);
+        Question q1 = question(1L, "basic", "A");
+        Question q2 = question(2L, "basic", "A");
+
+        QuizAnswer a1 = answer(attempt, q1, false);
+
+        when(quizAttemptRepository.findById(10L)).thenReturn(Optional.of(attempt));
+        when(questionRepository.findById(2L)).thenReturn(Optional.of(q2));
+        when(quizAnswerRepository.findByQuizAttemptId(10L)).thenReturn(List.of(a1));
+        when(quizAnswerRepository.save(any(QuizAnswer.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(quizAttemptRepository.save(any(QuizAttempt.class))).thenAnswer(inv -> inv.getArgument(0));
+        lenient().when(questionRepository.findByLessonId(1L)).thenReturn(List.of(q1, q2));
+
+        AdaptiveAnswerResponse response = quizService.answerAdaptiveQuestion(
+                answerRequest(2L, "B", "basic", 10));
+
+        assertThat(response.getFinished()).isTrue();
+        assertThat(response.getCorrectAnswers()).isEqualTo(0);
+        assertThat(response.getFinalScore()).isEqualTo(0.0F);
+        assertThat(response.getResultStatus()).isEqualTo("fail");
+    }
+
+    @Test
     void adaptiveQuizRejectsDuplicateAnswerInSameAttempt() {
         QuizAttempt attempt = attempt(3);
         Question currentQuestion = question(1L, "basic", "A");

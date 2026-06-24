@@ -19,7 +19,7 @@ function getRecommendationInfo(recommendation) {
 function ScoreRing({ value, label, color = '#2563eb', size = 88 }) {
   const r = 36
   const circ = 2 * Math.PI * r
-  const pct = Math.min(Math.max(Number(value) || 0, 0), 100)
+  const pct = Math.round(Math.min(Math.max(Number(value) || 0, 0), 100))
   const offset = circ - (pct / 100) * circ
 
   return (

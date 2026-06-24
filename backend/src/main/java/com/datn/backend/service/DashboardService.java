@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -103,7 +104,7 @@ public class DashboardService {
                 .stream()
                 .map(FeedbackResponse::from)
                 .toList());
-        response.setFocusLogs(focusLogRepository.findByUserId(userId)
+        response.setFocusLogs(focusLogRepository.findByUserIdAndRecordedAtAfter(userId, LocalDateTime.now().minusDays(30))
                 .stream()
                 .map(FocusLogResponse::from)
                 .toList());

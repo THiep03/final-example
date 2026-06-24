@@ -38,6 +38,7 @@ function QuizPage() {
   const [currentDifficulty, setCurrentDifficulty] = useState('basic')
   const [selectedAnswer, setSelectedAnswer] = useState('')
   const [answeredCount, setAnsweredCount] = useState(0)
+  const [correctCount, setCorrectCount] = useState(0)
   const [totalQuestions, setTotalQuestions] = useState(QUIZ_CONFIG.TOTAL_ADAPTIVE_QUESTIONS)
   const [questionStartedAt, setQuestionStartedAt] = useState(null)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
@@ -186,6 +187,7 @@ function QuizPage() {
       setCurrentQuestion(data.nextQuestion)
       setCurrentDifficulty(data.nextDifficulty || data.nextQuestion.difficultyLevel || currentDifficulty)
       setAnsweredCount(nextAnsweredCount)
+      setCorrectCount(data.correctAnswers ?? 0)
       setTotalQuestions(data.totalQuestions || totalQuestions)
       setSelectedAnswer('')
       setQuestionStartedAt(Date.now())
@@ -234,7 +236,8 @@ function QuizPage() {
             </p>
           </div>
           <div className="quiz-progress">
-            Đã trả lời {answeredCount}/{totalQuestions}
+            <span>Đã trả lời {answeredCount}/{totalQuestions}</span>
+            <span>Đúng {correctCount}/{totalQuestions}</span>
           </div>
         </div>
 
@@ -337,6 +340,9 @@ function QuizPage() {
                   Xem phản hồi
                 </Link>
               )}
+              <Link className="secondary-button" to={ROUTES.quizPage(lessonId)}>
+                Làm lại quiz
+              </Link>
               <Link className="primary-button" to={ROUTES.lessonDetail(lessonId)}>
                 Quay lại bài học
               </Link>

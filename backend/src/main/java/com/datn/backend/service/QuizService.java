@@ -172,6 +172,7 @@ public class QuizService {
         response.setNextDifficulty(normalizeDifficulty(nextQuestion.get().getDifficultyLevel()));
         response.setNextQuestion(AdaptiveQuizQuestionResponse.from(nextQuestion.get()));
         response.setCurrentScore(currentScore);
+        response.setCorrectAnswers(correctAnswers);
         response.setAnsweredCount(answeredCount);
         response.setTotalQuestions(targetTotalQuestions);
         return response;
